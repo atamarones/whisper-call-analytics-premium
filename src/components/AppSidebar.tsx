@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const menuItems = [
   { title: "Analítica", url: "/", icon: BarChart3 },
@@ -41,10 +42,15 @@ const menuItems = [
 const AppSidebar = () => {
   const { state } = useSidebar();
   const location = useLocation();
+  const { user, logout } = useAuth();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
   const collapsed = state === "collapsed";
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <Sidebar
@@ -132,17 +138,25 @@ const AppSidebar = () => {
         <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
           <Avatar className="h-8 w-8">
             <AvatarImage src="/api/placeholder/32/32" />
-            <AvatarFallback className="bg-dashboard-blue text-white">C</AvatarFallback>
+            <AvatarFallback className="bg-dashboard-blue text-white">
+              {user?.name?.charAt(0) || 'C'}
+            </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">Claudia</p>
+              <p className="text-white text-sm font-medium truncate">{user?.name || 'Usuario'}</p>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Bell className="h-3 w-3 text-gray-400" />
                   <span className="text-xs text-gray-400">0</span>
                 </div>
-                <Button variant="ghost" size="sm" className="h-auto p-0 text-gray-400 hover:text-white">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-auto p-0 text-gray-400 hover:text-white"
+                  onClick={handleLogout}
+                  title="Cerrar sesión"
+                >
                   <LogOut className="h-3 w-3" />
                 </Button>
               </div>
@@ -150,8 +164,12 @@ const AppSidebar = () => {
           )}
         </div>
         {!collapsed && (
-          <Button variant="ghost" className="w-full mt-2 text-xs text-gray-400 hover:text-white justify-start">
-            Salir de la vista previa
+          <Button 
+            variant="ghost" 
+            className="w-full mt-2 text-xs text-gray-400 hover:text-white justify-start"
+            onClick={handleLogout}
+          >
+            Cerrar sesión
           </Button>
         )}
       </div>
