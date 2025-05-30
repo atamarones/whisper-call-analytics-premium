@@ -39,16 +39,17 @@ const menuItems = [
 ];
 
 const AppSidebar = () => {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
+  const collapsed = state === "collapsed";
 
   return (
     <Sidebar
       className={`border-r border-white/10 bg-dashboard-navy-light ${collapsed ? "w-16" : "w-64"}`}
-      collapsible
+      collapsible="icon"
     >
       {/* Header */}
       <div className="p-4 border-b border-white/10">
@@ -78,7 +79,7 @@ const AppSidebar = () => {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className={`sidebar-item ${isActive(item.url) ? 'active' : ''} ${
+                      className={`sidebar-item group ${isActive(item.url) ? 'active' : ''} ${
                         collapsed ? 'justify-center' : ''
                       }`}
                     >
@@ -112,7 +113,7 @@ const AppSidebar = () => {
                 <SidebarMenuButton asChild>
                   <NavLink
                     to="/settings"
-                    className={`sidebar-item ${isActive('/settings') ? 'active' : ''} ${
+                    className={`sidebar-item group ${isActive('/settings') ? 'active' : ''} ${
                       collapsed ? 'justify-center' : ''
                     }`}
                   >
