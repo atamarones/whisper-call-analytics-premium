@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Phone, 
   TrendingUp, 
@@ -18,15 +19,24 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-// Mock data
+// Time periods
+const timePeriods = [
+  { value: '7d', label: 'Últimos 7 días' },
+  { value: '15d', label: 'Últimos 15 días' },
+  { value: '1m', label: 'Último 1 mes' },
+  { value: '3m', label: 'Últimos 3 meses' },
+  { value: '6m', label: 'Último 6 meses' },
+];
+
+// Mock data with comparison
 const callsData = [
-  { date: '11 Feb', minutes: 0, calls: 0 },
-  { date: '12 Feb', minutes: 0.5, calls: 1 },
-  { date: '13 Feb', minutes: 1.2, calls: 2 },
-  { date: '14 Feb', minutes: 2.8, calls: 4 },
-  { date: '15 Feb', minutes: 5.85, calls: 6 },
-  { date: '16 Feb', minutes: 4.2, calls: 3 },
-  { date: '17 Feb', minutes: 3.1, calls: 2 },
+  { date: '11 Feb', minutes: 0, calls: 0, previousMinutes: 0 },
+  { date: '12 Feb', minutes: 0.5, calls: 1, previousMinutes: 0.2 },
+  { date: '13 Feb', minutes: 1.2, calls: 2, previousMinutes: 0.8 },
+  { date: '14 Feb', minutes: 2.8, calls: 4, previousMinutes: 1.5 },
+  { date: '15 Feb', minutes: 5.85, calls: 6, previousMinutes: 3.2 },
+  { date: '16 Feb', minutes: 4.2, calls: 3, previousMinutes: 2.8 },
+  { date: '17 Feb', minutes: 3.1, calls: 2, previousMinutes: 2.1 },
 ];
 
 const recentCalls = [
@@ -38,6 +48,7 @@ const recentCalls = [
 
 const Dashboard = () => {
   const [isPlaying, setIsPlaying] = useState<number | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [metrics, setMetrics] = useState({
     totalMinutes: 5.85,
     totalCalls: 3,
@@ -71,19 +82,36 @@ const Dashboard = () => {
     setIsPlaying(isPlaying === callId ? null : callId);
   };
 
+  const getPeriodLabel = () => {
+    return timePeriods.find(p => p.value === selectedPeriod)?.label || 'Últimos 7 días';
+  };
+
   return (
     <div className="min-h-screen bg-dashboard-navy p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Analítica</h1>
-          <p className="text-gray-400 mt-1">Últimos 7 días</p>
+          <p className="text-gray-400 mt-1">{getPeriodLabel()}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10">
-            <Calendar className="h-4 w-4 mr-2" />
-            Últimos 7 días
-          </Button>
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-48 bg-white/5 border-white/10 text-white hover:bg-white/10">
+              <Calendar className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-dashboard-navy-light border-white/10">
+              {timePeriods.map((period) => (
+                <SelectItem 
+                  key={period.value} 
+                  value={period.value}
+                  className="text-white hover:bg-white/10 focus:bg-white/10"
+                >
+                  {period.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button className="bg-dashboard-blue hover:bg-dashboard-blue-light">
             <Download className="h-4 w-4 mr-2" />
             Exportar
@@ -121,7 +149,7 @@ const Dashboard = () => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Minutes Chart */}
+        {/* Minutes Chart with Comparison */}
         <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
@@ -130,15 +158,19 @@ const Dashboard = () => {
                 +97.2%
               </Badge>
             </CardTitle>
-            <p className="text-gray-400 text-sm">El número total de minutos dedicados a llamadas cada día.</p>
+            <p className="text-gray-400 text-sm">Comparación con período anterior</p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={callsData}>
+              <LineChart data={callsData}>
                 <defs>
-                  <linearGradient id="minutesGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="currentGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="previousGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6b7280" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#6b7280" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -154,12 +186,20 @@ const Dashboard = () => {
                 />
                 <Area
                   type="monotone"
+                  dataKey="previousMinutes"
+                  stroke="#6b7280"
+                  strokeWidth={2}
+                  fill="url(#previousGradient)"
+                  strokeDasharray="5 5"
+                />
+                <Area
+                  type="monotone"
                   dataKey="minutes"
                   stroke="#10b981"
                   strokeWidth={2}
-                  fill="url(#minutesGradient)"
+                  fill="url(#currentGradient)"
                 />
-              </AreaChart>
+              </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -211,38 +251,40 @@ const Dashboard = () => {
           <div className="space-y-3">
             {recentCalls.map((call) => (
               <div key={call.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => togglePlay(call.id)}
-                    className="text-dashboard-blue hover:text-dashboard-blue-light"
+                    className="text-dashboard-blue hover:text-dashboard-blue-light flex-shrink-0"
                   >
                     {isPlaying === call.id ? 
                       <PauseCircle className="h-5 w-5" /> : 
                       <PlayCircle className="h-5 w-5" />
                     }
                   </Button>
-                  <div>
-                    <p className="text-white font-medium">{call.contact}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium truncate">{call.contact}</p>
                     <p className="text-gray-400 text-sm">{call.timestamp}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <p className="text-white">{call.duration}</p>
-                    <p className="text-gray-400 text-sm">{call.cost}</p>
+                  <div className="text-right w-16">
+                    <p className="text-white text-sm">{call.duration}</p>
+                    <p className="text-gray-400 text-xs">{call.cost}</p>
                   </div>
-                  <Badge 
-                    variant={call.status === 'completed' ? 'default' : 'destructive'}
-                    className={call.status === 'completed' ? 
-                      'bg-dashboard-green/20 text-dashboard-green hover:bg-dashboard-green/30' : 
-                      'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                    }
-                  >
-                    {call.status === 'completed' ? 'Completada' : 'Fallida'}
-                  </Badge>
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                  <div className="w-24 flex justify-center">
+                    <Badge 
+                      variant={call.status === 'completed' ? 'default' : 'destructive'}
+                      className={call.status === 'completed' ? 
+                        'bg-dashboard-green/20 text-dashboard-green hover:bg-dashboard-green/30' : 
+                        'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                      }
+                    >
+                      {call.status === 'completed' ? 'Completada' : 'Fallida'}
+                    </Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white flex-shrink-0">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </div>
