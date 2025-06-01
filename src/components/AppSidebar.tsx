@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -29,6 +28,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 const menuItems = [
   { title: "Analítica", url: "/", icon: BarChart3 },
@@ -54,28 +54,36 @@ const AppSidebar = () => {
 
   return (
     <Sidebar
-      className={`border-r border-white/10 bg-dashboard-navy-light ${collapsed ? "w-16" : "w-64"}`}
+      className={`border-r border-border bg-sidebar ${collapsed ? "w-16" : "w-64"}`}
       collapsible="icon"
     >
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
           {!collapsed && (
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-dashboard-blue to-dashboard-purple rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">AL</span>
               </div>
-              <span className="text-white font-semibold text-lg">Analítica</span>
+              <span className="text-sidebar-foreground font-semibold text-lg">Analítica</span>
             </div>
           )}
-          <SidebarTrigger className="ml-auto text-gray-400 hover:text-white" />
+          <div className="ml-auto flex items-center gap-2">
+            {!collapsed && <ThemeToggle size="sm" />}
+            <SidebarTrigger className="text-sidebar-foreground/60 hover:text-sidebar-foreground" />
+          </div>
         </div>
+        {collapsed && (
+          <div className="mt-2 flex justify-center">
+            <ThemeToggle size="sm" />
+          </div>
+        )}
       </div>
 
       <SidebarContent className="px-2">
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-400 text-xs uppercase tracking-wider px-3 py-2">
+          <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider px-3 py-2">
             {!collapsed && "Navegación"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -103,7 +111,7 @@ const AppSidebar = () => {
         {!collapsed && (
           <SidebarGroup>
             <SidebarGroupContent>
-              <Button variant="ghost" className="w-full justify-start text-gray-400 hover:text-white hover:bg-white/5">
+              <Button variant="ghost" className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Custom Menu
               </Button>
@@ -134,7 +142,7 @@ const AppSidebar = () => {
       </SidebarContent>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-border">
         <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
           <Avatar className="h-8 w-8">
             <AvatarImage src="/api/placeholder/32/32" />
@@ -144,16 +152,16 @@ const AppSidebar = () => {
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">{user?.name || 'Usuario'}</p>
+              <p className="text-sidebar-foreground text-sm font-medium truncate">{user?.name || 'Usuario'}</p>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
-                  <Bell className="h-3 w-3 text-gray-400" />
-                  <span className="text-xs text-gray-400">0</span>
+                  <Bell className="h-3 w-3 text-sidebar-foreground/60" />
+                  <span className="text-xs text-sidebar-foreground/60">0</span>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-auto p-0 text-gray-400 hover:text-white"
+                  className="h-auto p-0 text-sidebar-foreground/60 hover:text-sidebar-foreground"
                   onClick={handleLogout}
                   title="Cerrar sesión"
                 >
@@ -166,7 +174,7 @@ const AppSidebar = () => {
         {!collapsed && (
           <Button 
             variant="ghost" 
-            className="w-full mt-2 text-xs text-gray-400 hover:text-white justify-start"
+            className="w-full mt-2 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground justify-start"
             onClick={handleLogout}
           >
             Cerrar sesión
