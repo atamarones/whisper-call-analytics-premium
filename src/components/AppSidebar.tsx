@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -28,7 +29,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import ThemeToggle from './ThemeToggle';
 
 const menuItems = [
   { title: "Analítica", url: "/", icon: BarChart3 },
@@ -68,16 +68,10 @@ const AppSidebar = () => {
               <span className="text-sidebar-foreground font-semibold text-lg">Analítica</span>
             </div>
           )}
-          <div className="ml-auto flex items-center gap-2">
-            {!collapsed && <ThemeToggle size="sm" />}
+          <div className="ml-auto">
             <SidebarTrigger className="text-sidebar-foreground/60 hover:text-sidebar-foreground" />
           </div>
         </div>
-        {collapsed && (
-          <div className="mt-2 flex justify-center">
-            <ThemeToggle size="sm" />
-          </div>
-        )}
       </div>
 
       <SidebarContent className="px-2">

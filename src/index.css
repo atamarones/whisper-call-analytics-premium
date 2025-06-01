@@ -118,6 +118,15 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-primary/50;
   }
+
+  /* Ensure proper theme transitions */
+  .dark {
+    color-scheme: dark;
+  }
+  
+  .light {
+    color-scheme: light;
+  }
 }
 
 @layer components {
