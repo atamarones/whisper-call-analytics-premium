@@ -23,17 +23,17 @@ serve(async (req) => {
     let query = supabaseClient
       .from('calls')
       .select('*')
-      .order('start_time_unix_secs', { ascending: false });
+      .order('start_time', { ascending: false });
 
-    // Aplicar filtros si están presentes
+    // Aplicar filtros usando las nuevas columnas
     if (filters.dateFrom) {
-      const fromTimestamp = Math.floor(new Date(filters.dateFrom).getTime() / 1000);
-      query = query.gte('start_time_unix_secs', fromTimestamp);
+      query = query.gte('start_time', filters.dateFrom);
     }
 
     if (filters.dateTo) {
-      const toTimestamp = Math.floor(new Date(filters.dateTo).getTime() / 1000);
-      query = query.lte('start_time_unix_secs', toTimestamp);
+      const toDate = new Date(filters.dateTo);
+      toDate.setDate(toDate.getDate() + 1); // Incluir todo el día
+      query = query.lt('start_time', toDate.toISOString());
     }
 
     if (filters.agentId && filters.agentId !== 'all') {
@@ -41,7 +41,12 @@ serve(async (req) => {
     }
 
     if (filters.status && filters.status !== 'all') {
-      query = query.eq('call_successful', filters.status);
+      // Usar la nueva columna status o fall back a call_successful
+      if (filters.status === 'success') {
+        query = query.or('status.eq.completed,call_successful.eq.success');
+      } else if (filters.status === 'failure') {
+        query = query.or('status.eq.failed,call_successful.eq.failure');
+      }
     }
 
     const { data: conversations, error } = await query.limit(100);
@@ -51,7 +56,26 @@ serve(async (req) => {
       throw error;
     }
 
-    return new Response(JSON.stringify(conversations || []), {
+    // Mapear los datos a la estructura esperada por el frontend
+    const mappedConversations = conversations?.map(call => ({
+      id: call.id,
+      conversation_id: call.conversation_id || call.id,
+      agent_id: call.agent_id,
+      phone_number: call.phone_number,
+      first_name: call.first_name,
+      email: call.email,
+      call_duration_secs: call.duration_seconds || call.call_duration_secs,
+      cost_cents: call.cost_cents,
+      total_cost_credits: call.total_cost_credits,
+      call_successful: call.status || call.call_successful,
+      start_time_unix_secs: call.start_time_unix || call.start_time_unix_secs,
+      start_time: call.start_time,
+      created_at: call.created_at,
+      call_direction: call.call_direction,
+      status: call.status
+    })) || [];
+
+    return new Response(JSON.stringify(mappedConversations), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

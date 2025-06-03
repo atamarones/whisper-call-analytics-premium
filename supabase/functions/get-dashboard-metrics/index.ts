@@ -20,9 +20,6 @@ serve(async (req) => {
 
     // Obtener fechas para comparación
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
     const lastWeekStart = new Date(today);
     lastWeekStart.setDate(lastWeekStart.getDate() - 7);
     
@@ -31,29 +28,43 @@ serve(async (req) => {
     const previousWeekEnd = new Date(today);
     previousWeekEnd.setDate(previousWeekEnd.getDate() - 7);
 
-    // Métricas actuales (últimos 7 días)
+    // Métricas actuales (últimos 7 días) - usando la nueva estructura
     const { data: currentWeekData } = await supabaseClient
       .from('calls')
-      .select('call_duration_secs, cost_cents')
-      .gte('start_time_unix_secs', Math.floor(lastWeekStart.getTime() / 1000));
+      .select('duration_seconds, cost_cents, total_cost_credits')
+      .gte('start_time', lastWeekStart.toISOString());
 
     // Métricas semana anterior
     const { data: previousWeekData } = await supabaseClient
       .from('calls')
-      .select('call_duration_secs, cost_cents')
-      .gte('start_time_unix_secs', Math.floor(previousWeekStart.getTime() / 1000))
-      .lt('start_time_unix_secs', Math.floor(previousWeekEnd.getTime() / 1000));
+      .select('duration_seconds, cost_cents, total_cost_credits')
+      .gte('start_time', previousWeekStart.toISOString())
+      .lt('start_time', previousWeekEnd.toISOString());
 
-    // Calcular métricas actuales
+    // Calcular métricas actuales usando la nueva estructura de datos
     const currentCalls = currentWeekData?.length || 0;
-    const currentMinutes = Math.round((currentWeekData?.reduce((sum, call) => sum + call.call_duration_secs, 0) || 0) / 60);
-    const currentCost = (currentWeekData?.reduce((sum, call) => sum + call.cost_cents, 0) || 0) / 100;
+    const currentMinutes = Math.round((currentWeekData?.reduce((sum, call) => sum + (call.duration_seconds || 0), 0) || 0) / 60);
+    
+    // Usar total_cost_credits si está disponible, sino cost_cents
+    const currentCost = currentWeekData?.reduce((sum, call) => {
+      if (call.total_cost_credits && call.total_cost_credits > 0) {
+        return sum + call.total_cost_credits;
+      }
+      return sum + ((call.cost_cents || 0) / 100);
+    }, 0) || 0;
+    
     const currentAvgCost = currentCalls > 0 ? currentCost / currentCalls : 0;
 
     // Calcular métricas anteriores
     const previousCalls = previousWeekData?.length || 0;
-    const previousMinutes = Math.round((previousWeekData?.reduce((sum, call) => sum + call.call_duration_secs, 0) || 0) / 60);
-    const previousCost = (previousWeekData?.reduce((sum, call) => sum + call.cost_cents, 0) || 0) / 100;
+    const previousMinutes = Math.round((previousWeekData?.reduce((sum, call) => sum + (call.duration_seconds || 0), 0) || 0) / 60);
+    
+    const previousCost = previousWeekData?.reduce((sum, call) => {
+      if (call.total_cost_credits && call.total_cost_credits > 0) {
+        return sum + call.total_cost_credits;
+      }
+      return sum + ((call.cost_cents || 0) / 100);
+    }, 0) || 0;
 
     // Calcular porcentajes de cambio
     const minutesChange = previousMinutes > 0 ? ((currentMinutes - previousMinutes) / previousMinutes) * 100 : 0;
@@ -80,6 +91,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    console.error('Function error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

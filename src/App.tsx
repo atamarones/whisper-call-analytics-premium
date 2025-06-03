@@ -8,6 +8,7 @@ import { SignedIn, SignedOut, SignIn } from "@clerk/clerk-react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Conversations from "./pages/Conversations";
+import Agents from "./pages/Agents";
 import Knowledge from "./pages/Knowledge";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/conversations" element={<Conversations />} />
+              <Route path="/agents" element={<Agents />} />
               <Route path="/knowledge" element={<Knowledge />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

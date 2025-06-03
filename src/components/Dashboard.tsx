@@ -31,8 +31,8 @@ const Dashboard = () => {
   };
 
   // Función para formatear el eje Y con números naturales
-  const formatYAxis = (value: number) => {
-    return Math.floor(Math.abs(value));
+  const formatYAxis = (value: number): string => {
+    return Math.floor(Math.abs(value)).toString();
   };
 
   if (metricsError) {
