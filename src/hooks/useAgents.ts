@@ -5,15 +5,19 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Agent {
   id: string;
   name: string;
-  description: string;
-  voice_name: string;
-  llm_provider: string;
-  llm_model: string;
-  is_active: boolean;
-  created_at: string;
+  description?: string;
+  voice_name?: string;
+  llm_provider?: string;
+  llm_model?: string;
+  is_active?: boolean;
+  created_at?: string;
   total_conversations?: number;
   avg_duration?: number;
+  avg_satisfaction?: number;
+  avg_cost?: number;
   success_rate?: number;
+  completed_conversations?: number;
+  failed_conversations?: number;
 }
 
 export const useAgents = () => {

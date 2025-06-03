@@ -28,43 +28,29 @@ serve(async (req) => {
     const previousWeekEnd = new Date(today);
     previousWeekEnd.setDate(previousWeekEnd.getDate() - 7);
 
-    // Métricas actuales (últimos 7 días) - usando la nueva estructura
+    // Métricas actuales (últimos 7 días)
     const { data: currentWeekData } = await supabaseClient
       .from('calls')
-      .select('duration_seconds, cost_cents, total_cost_credits')
-      .gte('start_time', lastWeekStart.toISOString());
+      .select('call_duration_secs, cost_cents')
+      .gte('created_at', lastWeekStart.toISOString());
 
     // Métricas semana anterior
     const { data: previousWeekData } = await supabaseClient
       .from('calls')
-      .select('duration_seconds, cost_cents, total_cost_credits')
-      .gte('start_time', previousWeekStart.toISOString())
-      .lt('start_time', previousWeekEnd.toISOString());
+      .select('call_duration_secs, cost_cents')
+      .gte('created_at', previousWeekStart.toISOString())
+      .lt('created_at', previousWeekEnd.toISOString());
 
-    // Calcular métricas actuales usando la nueva estructura de datos
+    // Calcular métricas actuales
     const currentCalls = currentWeekData?.length || 0;
-    const currentMinutes = Math.round((currentWeekData?.reduce((sum, call) => sum + (call.duration_seconds || 0), 0) || 0) / 60);
-    
-    // Usar total_cost_credits si está disponible, sino cost_cents
-    const currentCost = currentWeekData?.reduce((sum, call) => {
-      if (call.total_cost_credits && call.total_cost_credits > 0) {
-        return sum + call.total_cost_credits;
-      }
-      return sum + ((call.cost_cents || 0) / 100);
-    }, 0) || 0;
-    
+    const currentMinutes = Math.round((currentWeekData?.reduce((sum, call) => sum + (call.call_duration_secs || 0), 0) || 0) / 60);
+    const currentCost = (currentWeekData?.reduce((sum, call) => sum + (call.cost_cents || 0), 0) || 0) / 100;
     const currentAvgCost = currentCalls > 0 ? currentCost / currentCalls : 0;
 
     // Calcular métricas anteriores
     const previousCalls = previousWeekData?.length || 0;
-    const previousMinutes = Math.round((previousWeekData?.reduce((sum, call) => sum + (call.duration_seconds || 0), 0) || 0) / 60);
-    
-    const previousCost = previousWeekData?.reduce((sum, call) => {
-      if (call.total_cost_credits && call.total_cost_credits > 0) {
-        return sum + call.total_cost_credits;
-      }
-      return sum + ((call.cost_cents || 0) / 100);
-    }, 0) || 0;
+    const previousMinutes = Math.round((previousWeekData?.reduce((sum, call) => sum + (call.call_duration_secs || 0), 0) || 0) / 60);
+    const previousCost = (previousWeekData?.reduce((sum, call) => sum + (call.cost_cents || 0), 0) || 0) / 100;
 
     // Calcular porcentajes de cambio
     const minutesChange = previousMinutes > 0 ? ((currentMinutes - previousMinutes) / previousMinutes) * 100 : 0;

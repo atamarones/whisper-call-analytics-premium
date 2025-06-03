@@ -20,30 +20,17 @@ serve(async (req) => {
 
     const { data: calls } = await supabaseClient
       .from('calls')
-      .select('phone_number, duration_seconds, cost_cents, total_cost_credits, call_successful, status')
+      .select('phone_number, call_duration_secs, cost_cents, call_successful')
       .order('created_at', { ascending: false })
       .limit(5);
 
-    const recentCalls = calls?.map((call, index) => {
-      // Usar total_cost_credits si está disponible, sino cost_cents
-      const cost = call.total_cost_credits && call.total_cost_credits > 0 
-        ? call.total_cost_credits 
-        : (call.cost_cents || 0) / 100;
-
-      // Determinar el estado basado en las nuevas columnas
-      let status = 'Fallida';
-      if (call.status === 'completed' || call.call_successful === 'success') {
-        status = 'Completada';
-      }
-
-      return {
-        id: index + 1,
-        number: call.phone_number || 'N/A',
-        duration: `${Math.floor((call.duration_seconds || 0) / 60)}:${((call.duration_seconds || 0) % 60).toString().padStart(2, '0')}`,
-        cost: `$${cost.toFixed(2)}`,
-        status: status
-      };
-    }) || [];
+    const recentCalls = calls?.map((call, index) => ({
+      id: index + 1,
+      number: call.phone_number || 'N/A',
+      duration: `${Math.floor((call.call_duration_secs || 0) / 60)}:${((call.call_duration_secs || 0) % 60).toString().padStart(2, '0')}`,
+      cost: `$${((call.cost_cents || 0) / 100).toFixed(2)}`,
+      status: call.call_successful === 'success' ? 'Completada' : 'Fallida'
+    })) || [];
 
     return new Response(JSON.stringify(recentCalls), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
