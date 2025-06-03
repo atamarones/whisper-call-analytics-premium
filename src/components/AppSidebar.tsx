@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink, useLocation } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
@@ -10,7 +11,9 @@ import {
   Settings,
   Users,
   Plus,
-  Bell
+  Bell,
+  Bot,
+  Filter
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,14 +28,22 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-const menuItems = [
-  { title: "Analítica", url: "/", icon: BarChart3 },
+const callAnalyticsItems = [
+  { title: "Dashboard", url: "/", icon: BarChart3 },
   { title: "Conversaciones", url: "/conversations", icon: MessageSquare },
+  { title: "Agentes", url: "/agents", icon: Users },
+];
+
+const chatbotAnalyticsItems = [
+  { title: "Dashboard Chatbots", url: "/chatbots", icon: Bot },
+  { title: "Interacciones", url: "/chatbot-interactions", icon: MessageSquare },
+  { title: "Configuración", url: "/chatbot-config", icon: Settings },
+];
+
+const generalItems = [
   { title: "Base de conocimientos", url: "/knowledge", icon: Database },
   { title: "Temas", url: "/topics", icon: Target },
-  { title: "Dirige", url: "/manage", icon: Users },
   { title: "Campañas", url: "/campaigns", icon: Phone },
 ];
 
@@ -67,14 +78,66 @@ const AppSidebar = () => {
       </div>
 
       <SidebarContent className="px-2">
-        {/* Main Navigation */}
+        {/* Call Analytics Section */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider px-3 py-2">
-            {!collapsed && "Navegación"}
+            {!collapsed && "Análisis de Llamadas"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {callAnalyticsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className={`sidebar-item group ${isActive(item.url) ? 'active' : ''} ${
+                        collapsed ? 'justify-center' : ''
+                      }`}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Chatbot Analytics Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider px-3 py-2">
+            {!collapsed && "Análisis de Chatbots"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {chatbotAnalyticsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className={`sidebar-item group ${isActive(item.url) ? 'active' : ''} ${
+                        collapsed ? 'justify-center' : ''
+                      }`}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* General Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider px-3 py-2">
+            {!collapsed && "General"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {generalItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

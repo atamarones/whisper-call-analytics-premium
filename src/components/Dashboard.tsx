@@ -30,6 +30,11 @@ const Dashboard = () => {
     );
   };
 
+  // Función para formatear el eje Y con números naturales
+  const formatYAxis = (value: number) => {
+    return Math.floor(Math.abs(value));
+  };
+
   if (metricsError) {
     console.error('Error loading dashboard metrics:', metricsError);
   }
@@ -40,7 +45,7 @@ const Dashboard = () => {
       <div className="border-b border-border bg-card">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-foreground">Analítica</h1>
+            <h1 className="text-2xl font-bold text-foreground">Analítica de Llamadas</h1>
             <p className="text-muted-foreground">Últimos 7 días</p>
           </div>
           <div className="flex items-center gap-4">
@@ -155,7 +160,7 @@ const Dashboard = () => {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Bar Chart */}
+          {/* Line Chart - Comparación con período anterior */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Comparación con período anterior</CardTitle>
@@ -165,39 +170,14 @@ const Dashboard = () => {
                 <Skeleton className="h-[300px] w-full" />
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px'
-                      }} 
-                    />
-                    <Bar dataKey="previous" fill="hsl(var(--muted))" name="Período anterior" />
-                    <Bar dataKey="current" fill="hsl(var(--primary))" name="Período actual" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Line Chart */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Tendencia de llamadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chartLoading ? (
-                <Skeleton className="h-[300px] w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))" 
+                      tickFormatter={formatYAxis}
+                      domain={[0, 'dataMax']}
+                    />
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
@@ -207,12 +187,55 @@ const Dashboard = () => {
                     />
                     <Line 
                       type="monotone" 
+                      dataKey="previous" 
+                      stroke="hsl(var(--muted))" 
+                      strokeWidth={2}
+                      name="Período anterior"
+                    />
+                    <Line 
+                      type="monotone" 
                       dataKey="current" 
                       stroke="hsl(var(--primary))" 
                       strokeWidth={2}
-                      name="Llamadas actuales"
+                      name="Período actual"
                     />
                   </LineChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Bar Chart - Tendencia de llamadas */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">Tendencia de llamadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartLoading ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))" 
+                      tickFormatter={formatYAxis}
+                      domain={[0, 'dataMax']}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }} 
+                    />
+                    <Bar 
+                      dataKey="current" 
+                      fill="hsl(var(--primary))" 
+                      name="Llamadas actuales"
+                    />
+                  </BarChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
