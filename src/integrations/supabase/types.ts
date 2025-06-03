@@ -9,356 +9,196 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      customers: {
+      call_evaluations: {
         Row: {
+          conversation_id: string
           created_at: string | null
-          email: string
-          id: number
-          last_visit: string | null
-          name: string
-          notes: string | null
-          phone: string
-          total_reservations: number | null
+          criteria_id: string
+          id: string
+          rationale: string | null
+          result: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string | null
+          criteria_id: string
+          id?: string
+          rationale?: string | null
+          result: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string | null
+          criteria_id?: string
+          id?: string
+          rationale?: string | null
+          result?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_evaluations_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["conversation_id"]
+          },
+        ]
+      }
+      call_transcripts: {
+        Row: {
+          conversation_id: string
+          created_at: string | null
+          full_transcript: Json | null
+          id: string
+          transcript_summary: string | null
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string | null
+          full_transcript?: Json | null
+          id?: string
+          transcript_summary?: string | null
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string | null
+          full_transcript?: Json | null
+          id?: string
+          transcript_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_transcripts_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["conversation_id"]
+          },
+        ]
+      }
+      calls: {
+        Row: {
+          accepted_time_unix_secs: number | null
+          agent_id: string
+          call_duration_secs: number
+          call_successful: string | null
+          conversation_id: string
+          cost_cents: number
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          main_language: string | null
+          phone_number: string | null
+          start_time_unix_secs: number
+          termination_reason: string | null
           updated_at: string | null
         }
         Insert: {
+          accepted_time_unix_secs?: number | null
+          agent_id: string
+          call_duration_secs: number
+          call_successful?: string | null
+          conversation_id: string
+          cost_cents: number
           created_at?: string | null
-          email: string
-          id?: number
-          last_visit?: string | null
-          name: string
-          notes?: string | null
-          phone: string
-          total_reservations?: number | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          main_language?: string | null
+          phone_number?: string | null
+          start_time_unix_secs: number
+          termination_reason?: string | null
           updated_at?: string | null
         }
         Update: {
+          accepted_time_unix_secs?: number | null
+          agent_id?: string
+          call_duration_secs?: number
+          call_successful?: string | null
+          conversation_id?: string
+          cost_cents?: number
           created_at?: string | null
-          email?: string
-          id?: number
-          last_visit?: string | null
-          name?: string
-          notes?: string | null
-          phone?: string
-          total_reservations?: number | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          main_language?: string | null
+          phone_number?: string | null
+          start_time_unix_secs?: number
+          termination_reason?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
-      notifications: {
+      llm_usage: {
         Row: {
-          created_at: string | null
-          id: number
-          message: string | null
-          reservation_id: number | null
-          sent_at: string | null
-          status: string | null
-          type: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          message?: string | null
-          reservation_id?: number | null
-          sent_at?: string | null
-          status?: string | null
-          type: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          message?: string | null
-          reservation_id?: number | null
-          sent_at?: string | null
-          status?: string | null
-          type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_reservation_id_fkey"
-            columns: ["reservation_id"]
-            isOneToOne: false
-            referencedRelation: "reservations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_reservation_id_fkey"
-            columns: ["reservation_id"]
-            isOneToOne: false
-            referencedRelation: "reservations_with_table"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reservations: {
-        Row: {
-          confirmed: boolean | null
-          created_at: string | null
-          date: string
-          email: string
-          guests: number
-          id: number
-          name: string
-          notes: string | null
-          phone: string
-          reservation_code: string | null
-          status: string | null
-          table_assigned: string | null
-          time: string
-          updated_at: string | null
-        }
-        Insert: {
-          confirmed?: boolean | null
-          created_at?: string | null
-          date: string
-          email: string
-          guests: number
-          id?: number
-          name: string
-          notes?: string | null
-          phone: string
-          reservation_code?: string | null
-          status?: string | null
-          table_assigned?: string | null
-          time: string
-          updated_at?: string | null
-        }
-        Update: {
-          confirmed?: boolean | null
-          created_at?: string | null
-          date?: string
-          email?: string
-          guests?: number
-          id?: number
-          name?: string
-          notes?: string | null
-          phone?: string
-          reservation_code?: string | null
-          status?: string | null
-          table_assigned?: string | null
-          time?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reservations_table_assigned_fkey"
-            columns: ["table_assigned"]
-            isOneToOne: false
-            referencedRelation: "tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      system_config: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: number
-          key: string
-          updated_at: string | null
-          value: string
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: number
-          key: string
-          updated_at?: string | null
-          value: string
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: number
-          key?: string
-          updated_at?: string | null
-          value?: string
-        }
-        Relationships: []
-      }
-      table_availability: {
-        Row: {
-          created_at: string | null
-          date: string
-          id: number
-          reservation_id: number | null
-          status: string | null
-          table_id: string | null
-          time: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          date: string
-          id?: number
-          reservation_id?: number | null
-          status?: string | null
-          table_id?: string | null
-          time: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          date?: string
-          id?: number
-          reservation_id?: number | null
-          status?: string | null
-          table_id?: string | null
-          time?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "table_availability_reservation_id_fkey"
-            columns: ["reservation_id"]
-            isOneToOne: false
-            referencedRelation: "reservations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "table_availability_reservation_id_fkey"
-            columns: ["reservation_id"]
-            isOneToOne: false
-            referencedRelation: "reservations_with_table"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "table_availability_table_id_fkey"
-            columns: ["table_id"]
-            isOneToOne: false
-            referencedRelation: "tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tables: {
-        Row: {
-          capacity: number
+          conversation_id: string
           created_at: string | null
           id: string
-          is_active: boolean | null
-          location: string | null
-          updated_at: string | null
+          input_price: number
+          input_tokens: number
+          model_name: string
+          output_price: number
+          output_tokens: number
+          total_price: number
         }
         Insert: {
-          capacity: number
-          created_at?: string | null
-          id: string
-          is_active?: boolean | null
-          location?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          capacity?: number
+          conversation_id: string
           created_at?: string | null
           id?: string
-          is_active?: boolean | null
-          location?: string | null
-          updated_at?: string | null
+          input_price: number
+          input_tokens: number
+          model_name: string
+          output_price: number
+          output_tokens: number
+          total_price: number
         }
-        Relationships: []
+        Update: {
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          input_price?: number
+          input_tokens?: number
+          model_name?: string
+          output_price?: number
+          output_tokens?: number
+          total_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "llm_usage_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["conversation_id"]
+          },
+        ]
       }
     }
     Views: {
-      daily_availability: {
+      daily_call_metrics: {
         Row: {
-          available_tables: number | null
-          date: string | null
-          occupied_tables: number | null
-          time: string | null
-          total_slots: number | null
-        }
-        Relationships: []
-      }
-      daily_reservation_stats: {
-        Row: {
-          cancelled_count: number | null
-          confirmed_count: number | null
-          date: string | null
-          pending_count: number | null
-          total_guests: number | null
-          total_reservations: number | null
-        }
-        Relationships: []
-      }
-      reservations_with_table: {
-        Row: {
-          confirmed: boolean | null
-          created_at: string | null
-          date: string | null
-          email: string | null
-          guests: number | null
-          id: number | null
-          name: string | null
-          notes: string | null
-          phone: string | null
-          reservation_code: string | null
-          status: string | null
-          table_assigned: string | null
-          table_capacity: number | null
-          table_location: string | null
-          time: string | null
-          updated_at: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reservations_table_assigned_fkey"
-            columns: ["table_assigned"]
-            isOneToOne: false
-            referencedRelation: "tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      table_availability_summary: {
-        Row: {
-          capacity: number | null
-          customer_name: string | null
-          date: string | null
-          guests: number | null
-          location: string | null
-          reservation_code: string | null
-          status: string | null
-          table_id: string | null
-          time: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "table_availability_table_id_fkey"
-            columns: ["table_id"]
-            isOneToOne: false
-            referencedRelation: "tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tables_occupancy: {
-        Row: {
-          available_tables: number | null
-          date: string | null
-          occupancy_percentage: number | null
-          occupied_tables: number | null
-          time: string | null
-          total_tables: number | null
-        }
-        Relationships: []
-      }
-      today_stats: {
-        Row: {
-          cancelled_today: number | null
-          confirmed_today: number | null
-          pending_today: number | null
-          total_guests_today: number | null
-          total_reservations_today: number | null
-          yesterday_guests: number | null
-          yesterday_total: number | null
+          avg_cost_cents: number | null
+          avg_duration_secs: number | null
+          call_date: string | null
+          total_calls: number | null
+          total_cost_cents: number | null
+          total_duration_secs: number | null
         }
         Relationships: []
       }
     }
     Functions: {
+      calculate_percentage_change: {
+        Args: { current_value: number; previous_value: number }
+        Returns: number
+      }
       generate_reservation_code: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      unix_to_date: {
+        Args: { unix_timestamp: number }
         Returns: string
       }
     }

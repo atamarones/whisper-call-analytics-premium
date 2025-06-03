@@ -1,32 +1,39 @@
 
 import React from 'react';
-import { BarChart3, Calendar, Download, Users, Phone, DollarSign, TrendingUp } from 'lucide-react';
+import { BarChart3, Calendar, Download, Users, Phone, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { Skeleton } from '@/components/ui/skeleton';
 import ThemeToggle from './ThemeToggle';
-
-const chartData = [
-  { name: 'Lun', current: 400, previous: 240 },
-  { name: 'Mar', current: 300, previous: 139 },
-  { name: 'Mié', current: 200, previous: 980 },
-  { name: 'Jue', current: 278, previous: 390 },
-  { name: 'Vie', current: 189, previous: 480 },
-  { name: 'Sáb', current: 239, previous: 380 },
-  { name: 'Dom', current: 349, previous: 430 },
-];
-
-const recentCalls = [
-  { id: 1, number: '+1 (555) 123-4567', duration: '2:45', cost: '$2.15', status: 'Completada' },
-  { id: 2, number: '+1 (555) 987-6543', duration: '1:32', cost: '$1.85', status: 'Completada' },
-  { id: 3, number: '+1 (555) 456-7890', duration: '3:21', cost: '$3.45', status: 'Fallida' },
-  { id: 4, number: '+1 (555) 654-3210', duration: '0:58', cost: '$0.95', status: 'Completada' },
-  { id: 5, number: '+1 (555) 789-0123', duration: '4:12', cost: '$4.25', status: 'Completada' },
-];
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useChartData } from '@/hooks/useChartData';
+import { useRecentCalls } from '@/hooks/useRecentCalls';
 
 const Dashboard = () => {
+  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
+  const { data: chartData, isLoading: chartLoading } = useChartData();
+  const { data: recentCalls, isLoading: callsLoading } = useRecentCalls();
+
+  const formatChange = (change: number) => {
+    const isPositive = change >= 0;
+    const Icon = isPositive ? TrendingUp : TrendingDown;
+    const colorClass = isPositive ? 'text-green-500' : 'text-red-500';
+    
+    return (
+      <p className={`text-xs ${colorClass} flex items-center gap-1`}>
+        <Icon className="h-3 w-3" />
+        {Math.abs(change).toFixed(1)}%
+      </p>
+    );
+  };
+
+  if (metricsError) {
+    console.error('Error loading dashboard metrics:', metricsError);
+  }
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
@@ -69,11 +76,16 @@ const Dashboard = () => {
               <BarChart3 className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">2,456</div>
-              <p className="text-xs text-green-500 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +97.2%
-              </p>
+              {metricsLoading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-foreground">
+                    {metrics?.totalMinutes?.toLocaleString() || '0'}
+                  </div>
+                  {metrics?.changes?.minutes !== undefined && formatChange(metrics.changes.minutes)}
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -85,8 +97,16 @@ const Dashboard = () => {
               <Phone className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">1,234</div>
-              <p className="text-xs text-muted-foreground">0% vs período anterior</p>
+              {metricsLoading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-foreground">
+                    {metrics?.totalCalls?.toLocaleString() || '0'}
+                  </div>
+                  {metrics?.changes?.calls !== undefined && formatChange(metrics.changes.calls)}
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -98,11 +118,16 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">$3,456</div>
-              <p className="text-xs text-green-500 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +97.2%
-              </p>
+              {metricsLoading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-foreground">
+                    ${metrics?.totalCost?.toFixed(2) || '0.00'}
+                  </div>
+                  {metrics?.changes?.cost !== undefined && formatChange(metrics.changes.cost)}
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -114,11 +139,16 @@ const Dashboard = () => {
               <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">$2.81</div>
-              <p className="text-xs text-green-500 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +97.2%
-              </p>
+              {metricsLoading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-foreground">
+                    ${metrics?.avgCostPerCall?.toFixed(2) || '0.00'}
+                  </div>
+                  {metrics?.changes?.avgCost !== undefined && formatChange(metrics.changes.avgCost)}
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -131,22 +161,26 @@ const Dashboard = () => {
               <CardTitle className="text-foreground">Comparación con período anterior</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }} 
-                  />
-                  <Bar dataKey="previous" fill="hsl(var(--muted))" name="Período anterior" />
-                  <Bar dataKey="current" fill="hsl(var(--primary))" name="Período actual" />
-                </BarChart>
-              </ResponsiveContainer>
+              {chartLoading ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }} 
+                    />
+                    <Bar dataKey="previous" fill="hsl(var(--muted))" name="Período anterior" />
+                    <Bar dataKey="current" fill="hsl(var(--primary))" name="Período actual" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
 
@@ -156,27 +190,31 @@ const Dashboard = () => {
               <CardTitle className="text-foreground">Tendencia de llamadas</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="current" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    name="Llamadas actuales"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {chartLoading ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }} 
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="current" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      name="Llamadas actuales"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -187,34 +225,42 @@ const Dashboard = () => {
             <CardTitle className="text-foreground">Llamadas recientes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-muted-foreground">Número</TableHead>
-                  <TableHead className="text-muted-foreground">Duración</TableHead>
-                  <TableHead className="text-muted-foreground">Costo</TableHead>
-                  <TableHead className="text-muted-foreground">Estado</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentCalls.map((call) => (
-                  <TableRow key={call.id}>
-                    <TableCell className="font-medium text-foreground">{call.number}</TableCell>
-                    <TableCell className="text-foreground">{call.duration}</TableCell>
-                    <TableCell className="text-foreground">{call.cost}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        call.status === 'Completada' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                      }`}>
-                        {call.status}
-                      </span>
-                    </TableCell>
-                  </TableRow>
+            {callsLoading ? (
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-muted-foreground">Número</TableHead>
+                    <TableHead className="text-muted-foreground">Duración</TableHead>
+                    <TableHead className="text-muted-foreground">Costo</TableHead>
+                    <TableHead className="text-muted-foreground">Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentCalls?.map((call) => (
+                    <TableRow key={call.id}>
+                      <TableCell className="font-medium text-foreground">{call.number}</TableCell>
+                      <TableCell className="text-foreground">{call.duration}</TableCell>
+                      <TableCell className="text-foreground">{call.cost}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          call.status === 'Completada' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                        }`}>
+                          {call.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>

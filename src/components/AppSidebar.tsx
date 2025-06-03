@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { NavLink, useLocation } from "react-router-dom";
+import { UserButton } from "@clerk/clerk-react";
 import {
   BarChart3,
   Phone,
@@ -130,10 +130,7 @@ const AppSidebar = () => {
       {/* User Profile */}
       <div className="p-4 border-t border-border">
         <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/api/placeholder/32/32" />
-            <AvatarFallback className="bg-dashboard-blue text-white">U</AvatarFallback>
-          </Avatar>
+          <UserButton afterSignOutUrl="/" />
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sidebar-foreground text-sm font-medium truncate">Usuario</p>
