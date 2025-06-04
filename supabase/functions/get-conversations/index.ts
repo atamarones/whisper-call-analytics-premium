@@ -32,7 +32,7 @@ serve(async (req) => {
 
     if (filters.dateTo) {
       const toDate = new Date(filters.dateTo);
-      toDate.setDate(toDate.getDate() + 1); // Incluir todo el día
+      toDate.setDate(toDate.getDate() + 1);
       query = query.lt('created_at', toDate.toISOString());
     }
 
@@ -55,7 +55,6 @@ serve(async (req) => {
       throw error;
     }
 
-    // Mapear los datos a la estructura esperada por el frontend
     const mappedConversations = conversations?.map(call => ({
       id: call.id,
       conversation_id: call.conversation_id || call.id,

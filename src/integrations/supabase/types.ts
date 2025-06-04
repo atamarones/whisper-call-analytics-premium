@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agents: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          llm_model: string | null
+          llm_provider: string | null
+          name: string
+          updated_at: string | null
+          voice_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id: string
+          is_active?: boolean | null
+          llm_model?: string | null
+          llm_provider?: string | null
+          name: string
+          updated_at?: string | null
+          voice_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          llm_model?: string | null
+          llm_provider?: string | null
+          name?: string
+          updated_at?: string | null
+          voice_name?: string | null
+        }
+        Relationships: []
+      }
       call_evaluations: {
         Row: {
           conversation_id: string
@@ -80,6 +116,7 @@ export type Database = {
         Row: {
           accepted_time_unix_secs: number | null
           agent_id: string
+          call_direction: string | null
           call_duration_secs: number
           call_successful: string | null
           conversation_id: string
@@ -91,12 +128,15 @@ export type Database = {
           main_language: string | null
           phone_number: string | null
           start_time_unix_secs: number
+          status: string | null
           termination_reason: string | null
+          total_cost_credits: number | null
           updated_at: string | null
         }
         Insert: {
           accepted_time_unix_secs?: number | null
           agent_id: string
+          call_direction?: string | null
           call_duration_secs: number
           call_successful?: string | null
           conversation_id: string
@@ -108,12 +148,15 @@ export type Database = {
           main_language?: string | null
           phone_number?: string | null
           start_time_unix_secs: number
+          status?: string | null
           termination_reason?: string | null
+          total_cost_credits?: number | null
           updated_at?: string | null
         }
         Update: {
           accepted_time_unix_secs?: number | null
           agent_id?: string
+          call_direction?: string | null
           call_duration_secs?: number
           call_successful?: string | null
           conversation_id?: string
@@ -125,8 +168,103 @@ export type Database = {
           main_language?: string | null
           phone_number?: string | null
           start_time_unix_secs?: number
+          status?: string | null
           termination_reason?: string | null
+          total_cost_credits?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      conversation_analysis: {
+        Row: {
+          conversation_id: string
+          conversation_quality_score: number | null
+          conversation_summary: string | null
+          created_at: string | null
+          goal_achievement_score: number | null
+          id: number
+          overall_satisfaction_score: number | null
+        }
+        Insert: {
+          conversation_id: string
+          conversation_quality_score?: number | null
+          conversation_summary?: string | null
+          created_at?: string | null
+          goal_achievement_score?: number | null
+          id?: number
+          overall_satisfaction_score?: number | null
+        }
+        Update: {
+          conversation_id?: string
+          conversation_quality_score?: number | null
+          conversation_summary?: string | null
+          created_at?: string | null
+          goal_achievement_score?: number | null
+          id?: number
+          overall_satisfaction_score?: number | null
+        }
+        Relationships: []
+      }
+      conversation_messages: {
+        Row: {
+          content: string | null
+          conversation_id: string
+          created_at: string | null
+          id: number
+          role: string
+          timestamp: string
+        }
+        Insert: {
+          content?: string | null
+          conversation_id: string
+          created_at?: string | null
+          id?: number
+          role: string
+          timestamp: string
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string
+          created_at?: string | null
+          id?: number
+          role?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      daily_metrics: {
+        Row: {
+          agent_id: string
+          average_satisfaction_score: number | null
+          created_at: string | null
+          date: string
+          id: number
+          success_rate: number | null
+          total_conversations: number | null
+          total_cost_credits: number | null
+          total_duration_seconds: number | null
+        }
+        Insert: {
+          agent_id: string
+          average_satisfaction_score?: number | null
+          created_at?: string | null
+          date: string
+          id?: number
+          success_rate?: number | null
+          total_conversations?: number | null
+          total_cost_credits?: number | null
+          total_duration_seconds?: number | null
+        }
+        Update: {
+          agent_id?: string
+          average_satisfaction_score?: number | null
+          created_at?: string | null
+          date?: string
+          id?: number
+          success_rate?: number | null
+          total_conversations?: number | null
+          total_cost_credits?: number | null
+          total_duration_seconds?: number | null
         }
         Relationships: []
       }
