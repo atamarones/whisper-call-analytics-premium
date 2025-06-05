@@ -125,6 +125,7 @@ export type Database = {
           call_direction: string | null
           call_duration_secs: number
           call_successful: string | null
+          channel_id: string | null
           conversation_id: string
           cost_cents: number
           created_at: string | null
@@ -145,6 +146,7 @@ export type Database = {
           call_direction?: string | null
           call_duration_secs: number
           call_successful?: string | null
+          channel_id?: string | null
           conversation_id: string
           cost_cents: number
           created_at?: string | null
@@ -165,6 +167,7 @@ export type Database = {
           call_direction?: string | null
           call_duration_secs?: number
           call_successful?: string | null
+          channel_id?: string | null
           conversation_id?: string
           cost_cents?: number
           created_at?: string | null
@@ -177,6 +180,100 @@ export type Database = {
           status?: string | null
           termination_reason?: string | null
           total_cost_credits?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_metrics: {
+        Row: {
+          agent_id: string
+          avg_conversation_duration_seconds: number | null
+          avg_response_time_seconds: number | null
+          avg_satisfaction_score: number | null
+          channel_id: string
+          created_at: string | null
+          date: string
+          failed_conversations: number | null
+          id: string
+          successful_conversations: number | null
+          total_conversations: number | null
+          total_cost_cents: number | null
+          total_messages: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          avg_conversation_duration_seconds?: number | null
+          avg_response_time_seconds?: number | null
+          avg_satisfaction_score?: number | null
+          channel_id: string
+          created_at?: string | null
+          date: string
+          failed_conversations?: number | null
+          id?: string
+          successful_conversations?: number | null
+          total_conversations?: number | null
+          total_cost_cents?: number | null
+          total_messages?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          avg_conversation_duration_seconds?: number | null
+          avg_response_time_seconds?: number | null
+          avg_satisfaction_score?: number | null
+          channel_id?: string
+          created_at?: string | null
+          date?: string
+          failed_conversations?: number | null
+          id?: string
+          successful_conversations?: number | null
+          total_conversations?: number | null
+          total_cost_cents?: number | null
+          total_messages?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_metrics_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channels: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -416,6 +513,21 @@ export type Database = {
       }
     }
     Views: {
+      channel_performance_summary: {
+        Row: {
+          active_agents: number | null
+          avg_satisfaction: number | null
+          channel_name: string | null
+          display_name: string | null
+          failed_conversations: number | null
+          last_activity_date: string | null
+          success_rate: number | null
+          successful_conversations: number | null
+          total_conversations: number | null
+          total_cost_cents: number | null
+        }
+        Relationships: []
+      }
       daily_call_metrics: {
         Row: {
           avg_cost_cents: number | null
