@@ -16,13 +16,18 @@ export interface UserProfile {
 }
 
 export const useUserProfile = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user-profile', user?.id],
     queryFn: async (): Promise<UserProfile | null> => {
-      if (!user) return null;
+      if (!user || !isLoaded) {
+        console.log('No user or not loaded yet');
+        return null;
+      }
+
+      console.log('Fetching profile for user:', user.id);
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -31,17 +36,21 @@ export const useUserProfile = () => {
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user profile:', error);
         throw error;
       }
 
+      console.log('Profile data:', data);
       return data;
     },
-    enabled: !!user,
+    enabled: !!(user && isLoaded),
   });
 
   const createProfileMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('No user found');
+
+      console.log('Creating profile for user:', user.emailAddresses[0]?.emailAddress);
 
       const profileData = {
         clerk_user_id: user.id,
@@ -57,11 +66,19 @@ export const useUserProfile = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating profile:', error);
+        throw error;
+      }
+
+      console.log('Profile created successfully:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+    },
+    onError: (error) => {
+      console.error('Failed to create profile:', error);
     },
   });
 

@@ -12,17 +12,34 @@ const AppContent = () => {
   const { user, isLoaded } = useUser();
   const { profile, createProfile, isCreatingProfile } = useUserProfile();
 
-  // Crear perfil automáticamente cuando el usuario se registra
+  // Only create profile after user is fully loaded and we don't have a profile yet
   useEffect(() => {
     if (isLoaded && user && !profile && !isCreatingProfile) {
+      console.log('Creating profile for user:', user.emailAddresses[0]?.emailAddress);
       createProfile();
     }
   }, [isLoaded, user, profile, createProfile, isCreatingProfile]);
 
+  // Show loading while Clerk is initializing
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Cargando aplicación...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while creating user profile (only for signed in users)
+  if (user && isCreatingProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Configurando tu perfil...</p>
+        </div>
       </div>
     );
   }
