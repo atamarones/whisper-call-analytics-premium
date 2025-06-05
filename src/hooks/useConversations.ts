@@ -1,5 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Conversation {
@@ -24,16 +25,23 @@ export interface ConversationFilters {
 }
 
 export const useConversations = (filters: ConversationFilters = {}) => {
+  const { getToken } = useAuth();
+
   return useQuery({
     queryKey: ['conversations', filters],
     queryFn: async (): Promise<Conversation[]> => {
+      const token = await getToken({ template: 'supabase' });
+      
       const { data, error } = await supabase.functions.invoke('get-conversations', {
-        body: { filters }
+        body: { filters },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       
       if (error) throw error;
       return data;
     },
-    refetchInterval: 2 * 60 * 1000, // Refrescar cada 2 minutos
+    refetchInterval: 2 * 60 * 1000,
   });
 };

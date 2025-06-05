@@ -1,5 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface DashboardMetrics {
@@ -16,14 +17,22 @@ export interface DashboardMetrics {
 }
 
 export const useDashboardMetrics = () => {
+  const { getToken } = useAuth();
+
   return useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: async (): Promise<DashboardMetrics> => {
-      const { data, error } = await supabase.functions.invoke('get-dashboard-metrics');
+      const token = await getToken({ template: 'supabase' });
+      
+      const { data, error } = await supabase.functions.invoke('get-dashboard-metrics', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       
       if (error) throw error;
       return data;
     },
-    refetchInterval: 5 * 60 * 1000, // Refrescar cada 5 minutos
+    refetchInterval: 5 * 60 * 1000,
   });
 };

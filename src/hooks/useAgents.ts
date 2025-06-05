@@ -1,5 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Agent {
@@ -21,10 +22,18 @@ export interface Agent {
 }
 
 export const useAgents = () => {
+  const { getToken } = useAuth();
+
   return useQuery({
     queryKey: ['agents'],
     queryFn: async (): Promise<Agent[]> => {
-      const { data, error } = await supabase.functions.invoke('get-agents');
+      const token = await getToken({ template: 'supabase' });
+      
+      const { data, error } = await supabase.functions.invoke('get-agents', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       
       if (error) throw error;
       return data;

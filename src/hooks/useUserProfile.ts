@@ -1,0 +1,95 @@
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@clerk/clerk-react';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface UserProfile {
+  id: string;
+  clerk_user_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  organization_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const useUserProfile = () => {
+  const { user } = useUser();
+  const queryClient = useQueryClient();
+
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['user-profile', user?.id],
+    queryFn: async (): Promise<UserProfile | null> => {
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('clerk_user_id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const createProfileMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('No user found');
+
+      const profileData = {
+        clerk_user_id: user.id,
+        email: user.emailAddresses[0]?.emailAddress || '',
+        first_name: user.firstName || '',
+        last_name: user.lastName || '',
+        role: 'user'
+      };
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert(profileData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: Partial<UserProfile>) => {
+      if (!user) throw new Error('No user found');
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('clerk_user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+    },
+  });
+
+  return {
+    profile,
+    isLoading,
+    createProfile: createProfileMutation.mutate,
+    updateProfile: updateProfileMutation.mutate,
+    isCreatingProfile: createProfileMutation.isPending,
+    isUpdatingProfile: updateProfileMutation.isPending,
+  };
+};

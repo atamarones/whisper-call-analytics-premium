@@ -1,44 +1,39 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SignedIn, SignedOut, SignIn } from "@clerk/clerk-react";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import Index from "./pages/Index";
-import Conversations from "./pages/Conversations";
-import Agents from "./pages/Agents";
-import Knowledge from "./pages/Knowledge";
-import NotFound from "./pages/NotFound";
+import React, { useEffect } from 'react';
+import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+import { useUserProfile } from '@/hooks/useUserProfile';
+import AuthenticatedApp from '@/components/AuthenticatedApp';
+import LoginPage from '@/components/LoginPage';
 
-const queryClient = new QueryClient();
+const App = () => {
+  const { user, isLoaded } = useUser();
+  const { profile, createProfile, isCreatingProfile } = useUserProfile();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <SignedOut>
-            <div className="min-h-screen flex items-center justify-center bg-background">
-              <SignIn />
-            </div>
-          </SignedOut>
-          <SignedIn>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/conversations" element={<Conversations />} />
-              <Route path="/agents" element={<Agents />} />
-              <Route path="/knowledge" element={<Knowledge />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </SignedIn>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+  // Crear perfil automáticamente cuando el usuario se registra
+  useEffect(() => {
+    if (isLoaded && user && !profile && !isCreatingProfile) {
+      createProfile();
+    }
+  }, [isLoaded, user, profile, createProfile, isCreatingProfile]);
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <SignedOut>
+        <LoginPage />
+      </SignedOut>
+      <SignedIn>
+        <AuthenticatedApp />
+      </SignedIn>
+    </>
+  );
+};
 
 export default App;

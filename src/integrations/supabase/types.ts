@@ -18,7 +18,9 @@ export type Database = {
           llm_model: string | null
           llm_provider: string | null
           name: string
+          organization_id: string | null
           updated_at: string | null
+          user_id: string | null
           voice_name: string | null
         }
         Insert: {
@@ -29,7 +31,9 @@ export type Database = {
           llm_model?: string | null
           llm_provider?: string | null
           name: string
+          organization_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
           voice_name?: string | null
         }
         Update: {
@@ -40,7 +44,9 @@ export type Database = {
           llm_model?: string | null
           llm_provider?: string | null
           name?: string
+          organization_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
           voice_name?: string | null
         }
         Relationships: []
@@ -312,6 +318,102 @@ export type Database = {
           },
         ]
       }
+      organizations: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          owner_clerk_user_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id: string
+          name: string
+          owner_clerk_user_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          owner_clerk_user_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_organization_permissions: {
+        Row: {
+          can_manage_agents: boolean | null
+          can_manage_users: boolean | null
+          can_view_metrics: boolean | null
+          clerk_user_id: string
+          created_at: string | null
+          id: string
+          organization_id: string
+          role: string | null
+        }
+        Insert: {
+          can_manage_agents?: boolean | null
+          can_manage_users?: boolean | null
+          can_view_metrics?: boolean | null
+          clerk_user_id: string
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          role?: string | null
+        }
+        Update: {
+          can_manage_agents?: boolean | null
+          can_manage_users?: boolean | null
+          can_view_metrics?: boolean | null
+          clerk_user_id?: string
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          clerk_user_id: string
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          organization_id: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          clerk_user_id: string
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          organization_id?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          clerk_user_id?: string
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          organization_id?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       daily_call_metrics: {
@@ -335,9 +437,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_clerk_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       unix_to_date: {
         Args: { unix_timestamp: number }
         Returns: string
+      }
+      user_has_permission: {
+        Args: { org_id: string; permission_type: string }
+        Returns: boolean
       }
     }
     Enums: {

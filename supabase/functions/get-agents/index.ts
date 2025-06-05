@@ -15,10 +15,15 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
     );
 
-    // Obtener agentes de la tabla agents
+    // Obtener agentes (RLS se encarga del filtrado automáticamente)
     const { data: agents, error: agentsError } = await supabaseClient
       .from('agents')
       .select('*');
@@ -49,6 +54,8 @@ serve(async (req) => {
           llm_provider: agent.llm_provider,
           llm_model: agent.llm_model,
           is_active: agent.is_active,
+          user_id: agent.user_id,
+          organization_id: agent.organization_id,
           total_conversations: totalCalls,
           avg_duration: totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
           avg_cost: totalCalls > 0 ? totalCost / totalCalls : 0,
