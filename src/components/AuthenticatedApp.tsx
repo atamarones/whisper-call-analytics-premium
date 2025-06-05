@@ -6,11 +6,11 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import Index from "./pages/Index";
-import Conversations from "./pages/Conversations";
-import Agents from "./pages/Agents";
-import Knowledge from "./pages/Knowledge";
-import NotFound from "./pages/NotFound";
+import Index from "@/pages/Index";
+import Conversations from "@/pages/Conversations";
+import Agents from "@/pages/Agents";
+import Knowledge from "@/pages/Knowledge";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
