@@ -1,11 +1,14 @@
 
 import React, { useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { useUserProfile } from '@/hooks/useUserProfile';
 import AuthenticatedApp from '@/components/AuthenticatedApp';
 import LoginPage from '@/components/LoginPage';
 
-const App = () => {
+const queryClient = new QueryClient();
+
+const AppContent = () => {
   const { user, isLoaded } = useUser();
   const { profile, createProfile, isCreatingProfile } = useUserProfile();
 
@@ -33,6 +36,14 @@ const App = () => {
         <AuthenticatedApp />
       </SignedIn>
     </>
+  );
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 };
 
