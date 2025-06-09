@@ -38,7 +38,8 @@ export const useUserProfile = () => {
 
         if (error && error.code !== 'PGRST116') {
           console.error('Error fetching user profile:', error);
-          throw error;
+          // Don't throw error, just return null to allow app to continue
+          return null;
         }
 
         console.log('Profile data:', data);
@@ -92,6 +93,8 @@ export const useUserProfile = () => {
     },
     onError: (error) => {
       console.error('Failed to create profile:', error);
+      // Don't block the app if profile creation fails
+      // The user can still use the app with Clerk authentication
     },
   });
 
