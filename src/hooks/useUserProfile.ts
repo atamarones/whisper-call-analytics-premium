@@ -29,21 +29,27 @@ export const useUserProfile = () => {
 
       console.log('Fetching profile for user:', user.id);
 
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('clerk_user_id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('clerk_user_id', user.id)
+          .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error);
-        throw error;
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching user profile:', error);
+          throw error;
+        }
+
+        console.log('Profile data:', data);
+        return data;
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+        return null;
       }
-
-      console.log('Profile data:', data);
-      return data;
     },
     enabled: !!(user && isLoaded),
+    retry: 1,
   });
 
   const createProfileMutation = useMutation({
@@ -52,13 +58,20 @@ export const useUserProfile = () => {
 
       console.log('Creating profile for user:', user.emailAddresses[0]?.emailAddress);
 
+      const email = user.emailAddresses[0]?.emailAddress || '';
+      
+      // Check if user should be admin
+      const isAdmin = email === 'sistemas0712@gmail.com';
+      
       const profileData = {
         clerk_user_id: user.id,
-        email: user.emailAddresses[0]?.emailAddress || '',
+        email,
         first_name: user.firstName || '',
         last_name: user.lastName || '',
-        role: 'user'
+        role: isAdmin ? 'admin' : 'user'
       };
+
+      console.log('Profile data to insert:', profileData);
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -108,5 +121,6 @@ export const useUserProfile = () => {
     updateProfile: updateProfileMutation.mutate,
     isCreatingProfile: createProfileMutation.isPending,
     isUpdatingProfile: updateProfileMutation.isPending,
+    createProfileError: createProfileMutation.error,
   };
 };

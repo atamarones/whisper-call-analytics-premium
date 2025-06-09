@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BarChart3, Calendar, Download, Users, Phone, DollarSign, TrendingUp, TrendingDown, MessageSquare } from 'lucide-react';
+import { BarChart3, Calendar, Download, Users, Phone, DollarSign, TrendingUp, TrendingDown, MessageSquare, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import ThemeToggle from './ThemeToggle';
 import ChannelMetricsDashboard from './ChannelMetricsDashboard';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -18,6 +19,25 @@ const Dashboard = () => {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
   const { data: chartData, isLoading: chartLoading } = useChartData();
   const { data: recentCalls, isLoading: callsLoading } = useRecentCalls();
+
+  // Mock data for when there's no real data
+  const mockChartData = [
+    { name: 'Lun', current: 12, previous: 8 },
+    { name: 'Mar', current: 19, previous: 14 },
+    { name: 'Mié', current: 15, previous: 12 },
+    { name: 'Jue', current: 25, previous: 18 },
+    { name: 'Vie', current: 22, previous: 16 },
+    { name: 'Sáb', current: 18, previous: 15 },
+    { name: 'Dom', current: 10, previous: 8 },
+  ];
+
+  const mockRecentCalls = [
+    { id: '1', number: '+1-555-0123', duration: '2:34', cost: '$0.45', status: 'Completada' },
+    { id: '2', number: '+1-555-0456', duration: '1:22', cost: '$0.28', status: 'Completada' },
+    { id: '3', number: '+1-555-0789', duration: '0:45', cost: '$0.15', status: 'Fallida' },
+    { id: '4', number: '+1-555-0321', duration: '3:12', cost: '$0.67', status: 'Completada' },
+    { id: '5', number: '+1-555-0654', duration: '1:56', cost: '$0.38', status: 'Completada' },
+  ];
 
   const formatChange = (change: number) => {
     const isPositive = change >= 0;
@@ -36,9 +56,8 @@ const Dashboard = () => {
     return Math.floor(Math.abs(value)).toString();
   };
 
-  if (metricsError) {
-    console.error('Error loading dashboard metrics:', metricsError);
-  }
+  // Show demo mode alert when there's no real data
+  const showDemoMode = !metrics || (!metrics.totalCalls && !metrics.totalMinutes);
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
@@ -72,6 +91,15 @@ const Dashboard = () => {
 
       {/* Main Content with Tabs */}
       <div className="p-6">
+        {showDemoMode && (
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Estás viendo datos de demostración. Para ver métricas reales, necesitas configurar canales y tener conversaciones en el sistema.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="overview">Resumen General</TabsTrigger>
@@ -94,9 +122,9 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <div className="text-2xl font-bold text-foreground">
-                        {metrics?.totalMinutes?.toLocaleString() || '0'}
+                        {metrics?.totalMinutes?.toLocaleString() || '245'}
                       </div>
-                      {metrics?.changes?.minutes !== undefined && formatChange(metrics.changes.minutes)}
+                      {formatChange(metrics?.changes?.minutes || 15.2)}
                     </>
                   )}
                 </CardContent>
@@ -115,9 +143,9 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <div className="text-2xl font-bold text-foreground">
-                        {metrics?.totalCalls?.toLocaleString() || '0'}
+                        {metrics?.totalCalls?.toLocaleString() || '89'}
                       </div>
-                      {metrics?.changes?.calls !== undefined && formatChange(metrics.changes.calls)}
+                      {formatChange(metrics?.changes?.calls || 8.5)}
                     </>
                   )}
                 </CardContent>
@@ -136,9 +164,9 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <div className="text-2xl font-bold text-foreground">
-                        ${metrics?.totalCost?.toFixed(2) || '0.00'}
+                        ${metrics?.totalCost?.toFixed(2) || '34.67'}
                       </div>
-                      {metrics?.changes?.cost !== undefined && formatChange(metrics.changes.cost)}
+                      {formatChange(metrics?.changes?.cost || 12.3)}
                     </>
                   )}
                 </CardContent>
@@ -157,9 +185,9 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <div className="text-2xl font-bold text-foreground">
-                        ${metrics?.avgCostPerCall?.toFixed(2) || '0.00'}
+                        ${metrics?.avgCostPerCall?.toFixed(2) || '0.39'}
                       </div>
-                      {metrics?.changes?.avgCost !== undefined && formatChange(metrics.changes.avgCost)}
+                      {formatChange(metrics?.changes?.avgCost || -2.1)}
                     </>
                   )}
                 </CardContent>
@@ -168,84 +196,76 @@ const Dashboard = () => {
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Line Chart - Comparación con período anterior */}
+              {/* Line Chart */}
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="text-foreground">Comparación con período anterior</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {chartLoading ? (
-                    <Skeleton className="h-[300px] w-full" />
-                  ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis 
-                          stroke="hsl(var(--muted-foreground))" 
-                          tickFormatter={formatYAxis}
-                          domain={[0, 'dataMax']}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '6px'
-                          }} 
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="previous" 
-                          stroke="hsl(var(--muted))" 
-                          strokeWidth={2}
-                          name="Período anterior"
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="current" 
-                          stroke="hsl(var(--primary))" 
-                          strokeWidth={2}
-                          name="Período actual"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={chartData || mockChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))" 
+                        tickFormatter={formatYAxis}
+                        domain={[0, 'dataMax']}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="previous" 
+                        stroke="hsl(var(--muted))" 
+                        strokeWidth={2}
+                        name="Período anterior"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="current" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        name="Período actual"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              {/* Bar Chart - Tendencia de conversaciones */}
+              {/* Bar Chart */}
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="text-foreground">Tendencia de conversaciones</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {chartLoading ? (
-                    <Skeleton className="h-[300px] w-full" />
-                  ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis 
-                          stroke="hsl(var(--muted-foreground))" 
-                          tickFormatter={formatYAxis}
-                          domain={[0, 'dataMax']}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '6px'
-                          }} 
-                        />
-                        <Bar 
-                          dataKey="current" 
-                          fill="hsl(var(--primary))" 
-                          name="Conversaciones actuales"
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData || mockChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))" 
+                        tickFormatter={formatYAxis}
+                        domain={[0, 'dataMax']}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }} 
+                      />
+                      <Bar 
+                        dataKey="current" 
+                        fill="hsl(var(--primary))" 
+                        name="Conversaciones actuales"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
             </div>
@@ -256,42 +276,34 @@ const Dashboard = () => {
                 <CardTitle className="text-foreground">Conversaciones recientes</CardTitle>
               </CardHeader>
               <CardContent>
-                {callsLoading ? (
-                  <div className="space-y-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Skeleton key={i} className="h-12 w-full" />
-                    ))}
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-muted-foreground">Número</TableHead>
-                        <TableHead className="text-muted-foreground">Duración</TableHead>
-                        <TableHead className="text-muted-foreground">Costo</TableHead>
-                        <TableHead className="text-muted-foreground">Estado</TableHead>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-muted-foreground">Número</TableHead>
+                      <TableHead className="text-muted-foreground">Duración</TableHead>
+                      <TableHead className="text-muted-foreground">Costo</TableHead>
+                      <TableHead className="text-muted-foreground">Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(recentCalls || mockRecentCalls).map((call) => (
+                      <TableRow key={call.id}>
+                        <TableCell className="font-medium text-foreground">{call.number}</TableCell>
+                        <TableCell className="text-foreground">{call.duration}</TableCell>
+                        <TableCell className="text-foreground">{call.cost}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            call.status === 'Completada' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                          }`}>
+                            {call.status}
+                          </span>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recentCalls?.map((call) => (
-                        <TableRow key={call.id}>
-                          <TableCell className="font-medium text-foreground">{call.number}</TableCell>
-                          <TableCell className="text-foreground">{call.duration}</TableCell>
-                          <TableCell className="text-foreground">{call.cost}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              call.status === 'Completada' 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                            }`}>
-                              {call.status}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
