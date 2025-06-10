@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, User } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import ThemeToggle from './ThemeToggle';
 
 const DashboardHeader = () => {
   const { user } = useUser();
@@ -25,8 +24,6 @@ const DashboardHeader = () => {
         </div>
         
         <div className="flex items-center gap-4">
-          <ThemeToggle showLabel={false} />
-          
           {profile && (
             <Card className="px-3 py-1">
               <CardContent className="p-0 flex items-center gap-2">

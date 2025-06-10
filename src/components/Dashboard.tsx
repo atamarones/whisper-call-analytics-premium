@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BarChart3, Calendar, Download, Users, Phone, DollarSign, TrendingUp, TrendingDown, MessageSquare, AlertCircle } from 'lucide-react';
+import { BarChart3, Calendar, Download, Phone, DollarSign, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import ThemeToggle from './ThemeToggle';
 import ChannelMetricsDashboard from './ChannelMetricsDashboard';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useChartData } from '@/hooks/useChartData';
@@ -20,7 +19,7 @@ const Dashboard = () => {
   const { data: chartData, isLoading: chartLoading } = useChartData();
   const { data: recentCalls, isLoading: callsLoading } = useRecentCalls();
 
-  // Mock data for when there's no real data
+  // Mock data específico para llamadas
   const mockChartData = [
     { name: 'Lun', current: 12, previous: 8 },
     { name: 'Mar', current: 19, previous: 14 },
@@ -61,15 +60,15 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      {/* Header */}
+      {/* Header específico para análisis de llamadas */}
       <div className="border-b border-border bg-card">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-foreground">Analítica de Chatbots</h1>
+            <Phone className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold text-foreground">Analítica de Llamadas</h1>
             <p className="text-muted-foreground">Últimos 7 días</p>
           </div>
           <div className="flex items-center gap-4">
-            <ThemeToggle showLabel={true} />
             <Select defaultValue="7days">
               <SelectTrigger className="w-40">
                 <Calendar className="h-4 w-4 mr-2" />
@@ -95,7 +94,7 @@ const Dashboard = () => {
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Estás viendo datos de demostración. Para ver métricas reales, necesitas configurar canales y tener conversaciones en el sistema.
+              Estás viendo datos de demostración. Para ver métricas reales, necesitas configurar agentes y tener llamadas en el sistema.
             </AlertDescription>
           </Alert>
         )}
@@ -107,7 +106,7 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Stats Grid */}
+            {/* Stats Grid - Solo métricas de llamadas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="bg-card border-border hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -133,9 +132,9 @@ const Dashboard = () => {
               <Card className="bg-card border-border hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Número de conversaciones
+                    Número de llamadas
                   </CardTitle>
-                  <MessageSquare className="h-4 w-4 text-primary" />
+                  <Phone className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   {metricsLoading ? (
@@ -175,7 +174,7 @@ const Dashboard = () => {
               <Card className="bg-card border-border hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Costo medio por conversación
+                    Costo medio por llamada
                   </CardTitle>
                   <TrendingUp className="h-4 w-4 text-primary" />
                 </CardHeader>
@@ -240,7 +239,7 @@ const Dashboard = () => {
               {/* Bar Chart */}
               <Card className="bg-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-foreground">Tendencia de conversaciones</CardTitle>
+                  <CardTitle className="text-foreground">Tendencia de llamadas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -262,7 +261,7 @@ const Dashboard = () => {
                       <Bar 
                         dataKey="current" 
                         fill="hsl(var(--primary))" 
-                        name="Conversaciones actuales"
+                        name="Llamadas actuales"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -270,10 +269,10 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Recent Calls Table */}
+            {/* Recent Calls Table - Solo llamadas */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-foreground">Conversaciones recientes</CardTitle>
+                <CardTitle className="text-foreground">Llamadas recientes</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
