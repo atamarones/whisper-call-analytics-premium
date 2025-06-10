@@ -55,206 +55,176 @@ const ChatbotDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header específico para chatbots */}
-      <div className="border-b border-border bg-card">
-        <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <Bot className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Analítica de Chatbots</h1>
-            <p className="text-muted-foreground">Últimos 7 días</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Select defaultValue="7days">
-              <SelectTrigger className="w-40">
-                <Calendar className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7days">Últimos 7 días</SelectItem>
-                <SelectItem value="30days">Últimos 30 días</SelectItem>
-                <SelectItem value="90days">Últimos 90 días</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="p-6 space-y-6">
+      <Alert>
+        <Bot className="h-4 w-4" />
+        <AlertDescription>
+          Estás viendo datos de demostración. Para ver métricas reales, necesitas configurar chatbots y tener conversaciones en el sistema.
+        </AlertDescription>
+      </Alert>
 
-      <div className="p-6 space-y-6">
-        <Alert>
-          <Bot className="h-4 w-4" />
-          <AlertDescription>
-            Estás viendo datos de demostración. Para ver métricas reales, necesitas configurar chatbots y tener conversaciones en el sistema.
-          </AlertDescription>
-        </Alert>
-
-        {/* Métricas específicas de chatbots */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total de conversaciones
-              </CardTitle>
-              <MessageSquare className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {mockChatbotMetrics.totalConversations.toLocaleString()}
-              </div>
-              {formatChange(mockChatbotMetrics.changes.conversations)}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Usuarios únicos
-              </CardTitle>
-              <Users className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {mockChatbotMetrics.activeUsers}
-              </div>
-              {formatChange(mockChatbotMetrics.changes.users)}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Tiempo promedio de respuesta
-              </CardTitle>
-              <Clock className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {mockChatbotMetrics.avgResponseTime}s
-              </div>
-              {formatChange(mockChatbotMetrics.changes.responseTime)}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Puntuación de satisfacción
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {mockChatbotMetrics.satisfactionScore}/5
-              </div>
-              {formatChange(mockChatbotMetrics.changes.satisfaction)}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Gráficos específicos de chatbots */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Conversaciones por día</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={mockChatbotChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="conversations" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    name="Conversaciones"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Usuarios activos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={mockChatbotChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }} 
-                  />
-                  <Bar 
-                    dataKey="users" 
-                    fill="hsl(var(--primary))" 
-                    name="Usuarios únicos"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabla de conversaciones recientes de chatbots */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">Conversaciones recientes</CardTitle>
+      {/* Métricas específicas de chatbots */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total de conversaciones
+            </CardTitle>
+            <MessageSquare className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-muted-foreground">Usuario</TableHead>
-                  <TableHead className="text-muted-foreground">Mensajes</TableHead>
-                  <TableHead className="text-muted-foreground">Duración</TableHead>
-                  <TableHead className="text-muted-foreground">Estado</TableHead>
-                  <TableHead className="text-muted-foreground">Chatbot</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockRecentConversations.map((conversation) => (
-                  <TableRow key={conversation.id}>
-                    <TableCell className="font-medium text-foreground">{conversation.user}</TableCell>
-                    <TableCell className="text-foreground">{conversation.messages}</TableCell>
-                    <TableCell className="text-foreground">{conversation.duration}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        conversation.status === 'Resuelto' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                          : conversation.status === 'En curso'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                      }`}>
-                        {conversation.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-foreground">{conversation.bot}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="text-2xl font-bold text-foreground">
+              {mockChatbotMetrics.totalConversations.toLocaleString()}
+            </div>
+            {formatChange(mockChatbotMetrics.changes.conversations)}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Usuarios únicos
+            </CardTitle>
+            <Users className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              {mockChatbotMetrics.activeUsers}
+            </div>
+            {formatChange(mockChatbotMetrics.changes.users)}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Tiempo promedio de respuesta
+            </CardTitle>
+            <Clock className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              {mockChatbotMetrics.avgResponseTime}s
+            </div>
+            {formatChange(mockChatbotMetrics.changes.responseTime)}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Puntuación de satisfacción
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              {mockChatbotMetrics.satisfactionScore}/5
+            </div>
+            {formatChange(mockChatbotMetrics.changes.satisfaction)}
           </CardContent>
         </Card>
       </div>
+
+      {/* Gráficos específicos de chatbots */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground">Conversaciones por día</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={mockChatbotChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px'
+                  }} 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="conversations" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  name="Conversaciones"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground">Usuarios activos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={mockChatbotChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px'
+                  }} 
+                />
+                <Bar 
+                  dataKey="users" 
+                  fill="hsl(var(--primary))" 
+                  name="Usuarios únicos"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabla de conversaciones recientes de chatbots */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground">Conversaciones recientes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-muted-foreground">Usuario</TableHead>
+                <TableHead className="text-muted-foreground">Mensajes</TableHead>
+                <TableHead className="text-muted-foreground">Duración</TableHead>
+                <TableHead className="text-muted-foreground">Estado</TableHead>
+                <TableHead className="text-muted-foreground">Chatbot</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockRecentConversations.map((conversation) => (
+                <TableRow key={conversation.id}>
+                  <TableCell className="font-medium text-foreground">{conversation.user}</TableCell>
+                  <TableCell className="text-foreground">{conversation.messages}</TableCell>
+                  <TableCell className="text-foreground">{conversation.duration}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      conversation.status === 'Resuelto' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                        : conversation.status === 'En curso'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                    }`}>
+                      {conversation.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-foreground">{conversation.bot}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };
