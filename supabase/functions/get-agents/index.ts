@@ -13,66 +13,86 @@ serve(async (req) => {
   }
 
   try {
+    // Obtener el token de autorización
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header provided');
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
 
-    // Obtener agentes (RLS se encarga del filtrado automáticamente)
-    const { data: agents, error: agentsError } = await supabaseClient
-      .from('agents')
-      .select('*');
+    console.log('Fetching agents with metrics...');
 
-    if (agentsError) {
-      console.error('Error fetching agents:', agentsError);
-      throw agentsError;
+    // Usar una query optimizada que combina agentes con métricas en una sola consulta
+    const { data: agentsWithMetrics, error } = await supabaseClient
+      .rpc('get_agents_with_performance_metrics');
+
+    if (error) {
+      console.error('Error calling RPC function:', error);
+      
+      // Fallback: obtener agentes básicos si la función RPC falla
+      const { data: agents, error: agentsError } = await supabaseClient
+        .from('agents')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (agentsError) {
+        console.error('Fallback error fetching agents:', agentsError);
+        throw agentsError;
+      }
+
+      // Calcular métricas básicas para el fallback
+      const agentsWithBasicMetrics = await Promise.all(
+        (agents || []).map(async (agent) => {
+          const { data: calls } = await supabaseClient
+            .from('calls')
+            .select('cost_cents, call_duration_secs, call_successful')
+            .eq('agent_id', agent.id)
+            .limit(1000); // Limitar para rendimiento
+
+          const totalCalls = calls?.length || 0;
+          const totalDuration = calls?.reduce((sum, call) => sum + (call.call_duration_secs || 0), 0) || 0;
+          const totalCost = calls?.reduce((sum, call) => sum + ((call.cost_cents || 0) / 100), 0) || 0;
+          const successfulCalls = calls?.filter(call => call.call_successful === 'success').length || 0;
+
+          return {
+            ...agent,
+            total_conversations: totalCalls,
+            avg_duration: totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
+            avg_cost: totalCalls > 0 ? totalCost / totalCalls : 0,
+            success_rate: totalCalls > 0 ? ((successfulCalls / totalCalls) * 100).toFixed(1) : '0',
+            completed_conversations: successfulCalls,
+            failed_conversations: totalCalls - successfulCalls,
+          };
+        })
+      );
+
+      return new Response(JSON.stringify(agentsWithBasicMetrics), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Para cada agente, calcular métricas desde la tabla calls
-    const agentsWithMetrics = await Promise.all(
-      agents.map(async (agent) => {
-        const { data: calls } = await supabaseClient
-          .from('calls')
-          .select('cost_cents, call_duration_secs, call_successful')
-          .eq('agent_id', agent.id);
+    console.log(`Successfully fetched ${agentsWithMetrics?.length || 0} agents with metrics`);
 
-        const totalCalls = calls?.length || 0;
-        const totalDuration = calls?.reduce((sum, call) => sum + (call.call_duration_secs || 0), 0) || 0;
-        const totalCost = calls?.reduce((sum, call) => sum + ((call.cost_cents || 0) / 100), 0) || 0;
-        const successfulCalls = calls?.filter(call => call.call_successful === 'success').length || 0;
-
-        return {
-          id: agent.id,
-          name: agent.name,
-          description: agent.description,
-          voice_name: agent.voice_name,
-          llm_provider: agent.llm_provider,
-          llm_model: agent.llm_model,
-          is_active: agent.is_active,
-          user_id: agent.user_id,
-          organization_id: agent.organization_id,
-          total_conversations: totalCalls,
-          avg_duration: totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
-          avg_cost: totalCalls > 0 ? totalCost / totalCalls : 0,
-          success_rate: totalCalls > 0 ? (successfulCalls / totalCalls * 100).toFixed(1) : 0,
-          completed_conversations: successfulCalls,
-          failed_conversations: totalCalls - successfulCalls,
-        };
-      })
-    );
-
-    return new Response(JSON.stringify(agentsWithMetrics), {
+    return new Response(JSON.stringify(agentsWithMetrics || []), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Function error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      details: 'Error fetching agents with performance metrics'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

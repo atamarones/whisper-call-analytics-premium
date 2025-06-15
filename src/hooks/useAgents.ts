@@ -17,6 +17,8 @@ export interface Agent {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
+  user_id?: string;
+  organization_id?: string;
   
   // Configuraciones adicionales de la nueva estructura
   conversation_config?: any;
@@ -30,12 +32,12 @@ export interface Agent {
   max_conversation_duration_seconds?: number;
   max_concurrent_conversations?: number;
   
-  // Métricas calculadas
+  // Métricas calculadas por la función edge
   total_conversations?: number;
   avg_duration?: number;
   avg_satisfaction?: number;
   avg_cost?: number;
-  success_rate?: number;
+  success_rate?: string;
   completed_conversations?: number;
   failed_conversations?: number;
 }
@@ -49,49 +51,33 @@ export const useAgents = () => {
       try {
         const token = await getToken({ template: 'supabase' });
         
-        // Obtener los agentes usando la nueva vista agent_performance
-        const { data: agentPerformanceData, error: performanceError } = await supabase
-          .from('agent_performance')
-          .select('*');
+        // Usar la función edge optimizada que ya calcula las métricas
+        const { data, error } = await supabase.functions.invoke('get-agents', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        if (performanceError) {
-          console.error('Error fetching agent performance:', performanceError);
+        if (error) {
+          console.error('Error calling get-agents function:', error);
+          throw new Error(error.message || 'Error fetching agents');
         }
 
-        // Obtener los datos básicos de agentes
-        const { data: agentsData, error: agentsError } = await supabase
-          .from('agents')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-
-        if (agentsError) {
-          console.error('Error fetching agents:', agentsError);
-          throw agentsError;
-        }
-
-        // Combinar los datos de agentes con las métricas de rendimiento
-        const combinedData = agentsData?.map(agent => {
-          const performance = agentPerformanceData?.find(p => p.id === agent.id);
-          
-          return {
-            ...agent,
-            total_conversations: performance?.total_conversations || 0,
-            avg_duration: performance?.avg_duration || 0,
-            avg_satisfaction: performance?.avg_satisfaction || 0,
-            avg_cost: performance?.avg_cost || 0,
-            success_rate: performance?.success_rate || 0,
-            completed_conversations: performance?.completed_conversations || 0,
-            failed_conversations: performance?.failed_conversations || 0
-          };
-        }) || [];
-
-        return combinedData;
+        return data || [];
       } catch (error) {
         console.error('Error in useAgents:', error);
         throw error;
       }
     },
-    refetchInterval: 5 * 60 * 1000,
+    // Caché inteligente - los datos son válidos por 2 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    // Mantener en caché por 5 minutos después de que se vuelvan stale
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    // Solo refetch cuando el usuario se enfoca en la ventana si los datos están stale
+    refetchOnWindowFocus: 'always',
+    // Reintentar una vez en caso de error
+    retry: 1,
+    // Intervalo de refetch más conservador
+    refetchInterval: 10 * 60 * 1000, // 10 minutos en lugar de 5
   });
 };
