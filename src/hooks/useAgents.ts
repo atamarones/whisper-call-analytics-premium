@@ -7,6 +7,7 @@ export interface Agent {
   id: string;
   name: string;
   description?: string;
+  voice_id?: string;
   voice_name?: string;
   voice_category?: string;
   llm_provider?: string;
@@ -17,7 +18,7 @@ export interface Agent {
   created_at?: string;
   updated_at?: string;
   
-  // Configuraciones adicionales
+  // Configuraciones adicionales de la nueva estructura
   conversation_config?: any;
   platform_settings?: any;
   tools_enabled?: boolean;
@@ -48,7 +49,16 @@ export const useAgents = () => {
       try {
         const token = await getToken({ template: 'supabase' });
         
-        // Obtener los agentes básicos
+        // Obtener los agentes usando la nueva vista agent_performance
+        const { data: agentPerformanceData, error: performanceError } = await supabase
+          .from('agent_performance')
+          .select('*');
+
+        if (performanceError) {
+          console.error('Error fetching agent performance:', performanceError);
+        }
+
+        // Obtener los datos básicos de agentes
         const { data: agentsData, error: agentsError } = await supabase
           .from('agents')
           .select('*')
@@ -60,61 +70,19 @@ export const useAgents = () => {
           throw agentsError;
         }
 
-        // Calcular métricas manualmente desde la tabla calls
-        const { data: callsData, error: callsError } = await supabase
-          .from('calls')
-          .select('*');
-
-        if (callsError) {
-          console.error('Error fetching calls for metrics:', callsError);
-        }
-
-        // Obtener datos de análisis de conversaciones
-        const { data: analysisData, error: analysisError } = await supabase
-          .from('conversation_analysis')
-          .select('*');
-
-        if (analysisError) {
-          console.error('Error fetching conversation analysis:', analysisError);
-        }
-
-        // Combinar los datos y calcular métricas
+        // Combinar los datos de agentes con las métricas de rendimiento
         const combinedData = agentsData?.map(agent => {
-          // Filtrar llamadas por agente
-          const agentCalls = callsData?.filter(call => call.agent_id === agent.id) || [];
+          const performance = agentPerformanceData?.find(p => p.id === agent.id);
           
-          // Calcular métricas básicas
-          const totalConversations = agentCalls.length;
-          const completedCalls = agentCalls.filter(call => call.call_successful === 'success').length;
-          const failedCalls = agentCalls.filter(call => call.call_successful === 'failure').length;
-          const avgDuration = totalConversations > 0 
-            ? agentCalls.reduce((sum, call) => sum + (call.call_duration_secs || 0), 0) / totalConversations 
-            : 0;
-          const avgCost = totalConversations > 0 
-            ? agentCalls.reduce((sum, call) => sum + (call.cost_cents || 0), 0) / totalConversations 
-            : 0;
-          const successRate = totalConversations > 0 
-            ? (completedCalls / totalConversations) * 100 
-            : 0;
-
-          // Calcular satisfacción promedio desde análisis
-          const agentAnalysis = analysisData?.filter(analysis => 
-            agentCalls.some(call => call.conversation_id === analysis.conversation_id)
-          ) || [];
-          
-          const avgSatisfaction = agentAnalysis.length > 0
-            ? agentAnalysis.reduce((sum, analysis) => sum + (analysis.overall_satisfaction_score || 0), 0) / agentAnalysis.length
-            : 0;
-
           return {
             ...agent,
-            total_conversations: totalConversations,
-            avg_duration: avgDuration,
-            avg_satisfaction: avgSatisfaction,
-            avg_cost: avgCost,
-            success_rate: successRate,
-            completed_conversations: completedCalls,
-            failed_conversations: failedCalls
+            total_conversations: performance?.total_conversations || 0,
+            avg_duration: performance?.avg_duration || 0,
+            avg_satisfaction: performance?.avg_satisfaction || 0,
+            avg_cost: performance?.avg_cost || 0,
+            success_rate: performance?.success_rate || 0,
+            completed_conversations: performance?.completed_conversations || 0,
+            failed_conversations: performance?.failed_conversations || 0
           };
         }) || [];
 
