@@ -43,15 +43,26 @@ export interface Agent {
 }
 
 export const useAgents = () => {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
 
   return useQuery({
     queryKey: ['agents'],
     queryFn: async (): Promise<Agent[]> => {
+      if (!isLoaded) {
+        console.log('Clerk not loaded yet, skipping agents fetch');
+        return [];
+      }
+
       try {
+        console.log('Fetching agents with authentication...');
         const token = await getToken({ template: 'supabase' });
         
-        // Usar la función edge optimizada que ya calcula las métricas
+        if (!token) {
+          console.error('No authentication token available. Please check Clerk JWT template configuration.');
+          throw new Error('Authentication failed: No token available');
+        }
+
+        console.log('Calling get-agents edge function...');
         const { data, error } = await supabase.functions.invoke('get-agents', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,21 +74,25 @@ export const useAgents = () => {
           throw new Error(error.message || 'Error fetching agents');
         }
 
+        console.log('Agents fetched successfully:', data?.length || 0, 'agents');
         return data || [];
       } catch (error) {
         console.error('Error in useAgents:', error);
         throw error;
       }
     },
-    // Caché inteligente - los datos son válidos por 2 minutos
+    enabled: isLoaded,
+    // Caché inteligente optimizado
     staleTime: 2 * 60 * 1000, // 2 minutos
-    // Mantener en caché por 5 minutos después de que se vuelvan stale
     gcTime: 5 * 60 * 1000, // 5 minutos
-    // Solo refetch cuando el usuario se enfoca en la ventana si los datos están stale
-    refetchOnWindowFocus: 'always',
-    // Reintentar una vez en caso de error
-    retry: 1,
-    // Intervalo de refetch más conservador
-    refetchInterval: 10 * 60 * 1000, // 10 minutos en lugar de 5
+    refetchOnWindowFocus: false, // Evitar refetch innecesarios al cambiar ventana
+    retry: (failureCount, error) => {
+      // Solo reintentar si es un error de red, no de autenticación
+      if (error.message.includes('Authentication failed')) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    refetchInterval: 10 * 60 * 1000, // 10 minutos
   });
 };
