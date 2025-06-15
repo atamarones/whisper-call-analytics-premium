@@ -1,22 +1,19 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
-import { useChartData } from '@/hooks/useChartData';
 import { useRecentCalls } from '@/hooks/useRecentCalls';
 import { useAgents } from '@/hooks/useAgents';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ArrowUpIcon, ArrowDownIcon, Phone, Clock, DollarSign, TrendingUp, Bot, Activity } from 'lucide-react';
 import AdvancedMetricsDashboard from './AdvancedMetricsDashboard';
 import ConversationAnalysisDashboard from './ConversationAnalysisDashboard';
 import DashboardHeader from './DashboardHeader';
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+import CallTrendsChart from './CallTrendsChart';
 
 const Dashboard = () => {
   const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
-  const { data: chartData, isLoading: chartLoading } = useChartData();
   const { data: recentCalls, isLoading: callsLoading } = useRecentCalls();
   const { data: agents, isLoading: agentsLoading } = useAgents();
 
@@ -76,108 +73,87 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <DashboardHeader />
-      <div className="p-6">
+      <div className="p-3 md:p-6">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Resumen General</TabsTrigger>
-            <TabsTrigger value="advanced">Métricas Avanzadas</TabsTrigger>
-            <TabsTrigger value="analysis">Análisis de Conversaciones</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="text-xs md:text-sm">Resumen General</TabsTrigger>
+            <TabsTrigger value="advanced" className="text-xs md:text-sm">Métricas Avanzadas</TabsTrigger>
+            <TabsTrigger value="analysis" className="text-xs md:text-sm">Análisis de Conversaciones</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-4 md:space-y-6">
             {/* Métricas principales */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Llamadas</CardTitle>
-                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-xs md:text-sm font-medium">Total de Llamadas</CardTitle>
+                  <Phone className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{metrics?.totalCalls || 0}</div>
+                  <div className="text-lg md:text-2xl font-bold">{metrics?.totalCalls || 0}</div>
                   <p className="text-xs text-muted-foreground flex items-center mt-1">
                     {formatChange(metrics?.changes?.calls || 0)}
-                    <span className="ml-1">vs período anterior</span>
+                    <span className="ml-1 hidden sm:inline">vs período anterior</span>
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Duración Total</CardTitle>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-xs md:text-sm font-medium">Duración Total</CardTitle>
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{Math.round((metrics?.totalMinutes || 0) / 60)}h {Math.round((metrics?.totalMinutes || 0) % 60)}m</div>
+                  <div className="text-lg md:text-2xl font-bold">{Math.round((metrics?.totalMinutes || 0) / 60)}h {Math.round((metrics?.totalMinutes || 0) % 60)}m</div>
                   <p className="text-xs text-muted-foreground flex items-center mt-1">
                     {formatChange(metrics?.changes?.minutes || 0)}
-                    <span className="ml-1">vs período anterior</span>
+                    <span className="ml-1 hidden sm:inline">vs período anterior</span>
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Costo Total</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-xs md:text-sm font-medium">Costo Total</CardTitle>
+                  <DollarSign className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency((metrics?.totalCost || 0) / 100)}</div>
+                  <div className="text-lg md:text-2xl font-bold">{formatCurrency((metrics?.totalCost || 0) / 100)}</div>
                   <p className="text-xs text-muted-foreground flex items-center mt-1">
                     {formatChange(metrics?.changes?.cost || 0)}
-                    <span className="ml-1">vs período anterior</span>
+                    <span className="ml-1 hidden sm:inline">vs período anterior</span>
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Costo Promedio</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-xs md:text-sm font-medium">Costo Promedio</CardTitle>
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency((metrics?.avgCostPerCall || 0) / 100)}</div>
+                  <div className="text-lg md:text-2xl font-bold">{formatCurrency((metrics?.avgCostPerCall || 0) / 100)}</div>
                   <p className="text-xs text-muted-foreground flex items-center mt-1">
                     {formatChange(metrics?.changes?.avgCost || 0)}
-                    <span className="ml-1">por llamada</span>
+                    <span className="ml-1 hidden sm:inline">por llamada</span>
                   </p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Gráficos y tablas */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Gráfico de tendencias */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tendencia de Llamadas</CardTitle>
-                  <CardDescription>Comparación período actual vs anterior</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {chartLoading ? (
-                    <Skeleton className="h-64 w-full" />
-                  ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={chartData || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="current" fill="#8884d8" name="Actual" />
-                        <Bar dataKey="previous" fill="#82ca9d" name="Anterior" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </CardContent>
-              </Card>
+            <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+              {/* Gráfico de tendencias - ahora es un componente separado */}
+              <CallTrendsChart />
 
               {/* Rendimiento de Agentes */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bot className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <Bot className="h-4 w-4 md:h-5 md:w-5" />
                     Rendimiento de Agentes
                   </CardTitle>
-                  <CardDescription>Métricas principales por agente</CardDescription>
+                  <CardDescription className="text-xs md:text-sm">Métricas principales por agente</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {agentsLoading ? (
@@ -187,29 +163,29 @@ const Dashboard = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                       {agents?.slice(0, 5).map((agent) => (
-                        <div key={agent.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <div>
-                              <p className="font-medium">{agent.name}</p>
-                              <p className="text-sm text-muted-foreground">{agent.description}</p>
+                        <div key={agent.id} className="flex items-center justify-between p-2 md:p-3 border rounded-lg">
+                          <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm md:text-base truncate">{agent.name}</p>
+                              <p className="text-xs md:text-sm text-muted-foreground truncate">{agent.description}</p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-4 text-sm">
-                              <div>
-                                <span className="font-medium">{agent.total_conversations || 0}</span>
-                                <span className="text-muted-foreground ml-1">llamadas</span>
+                          <div className="text-right flex-shrink-0">
+                            <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm">
+                              <div className="text-center">
+                                <div className="font-medium">{agent.total_conversations || 0}</div>
+                                <div className="text-muted-foreground">llamadas</div>
                               </div>
-                              <div>
-                                <span className="font-medium">{formatSuccessRate(agent.success_rate)}%</span>
-                                <span className="text-muted-foreground ml-1">éxito</span>
+                              <div className="text-center hidden sm:block">
+                                <div className="font-medium">{formatSuccessRate(agent.success_rate)}%</div>
+                                <div className="text-muted-foreground">éxito</div>
                               </div>
-                              <div>
-                                <span className="font-medium">{formatCurrency((agent.avg_cost || 0) / 100)}</span>
-                                <span className="text-muted-foreground ml-1">promedio</span>
+                              <div className="text-center">
+                                <div className="font-medium">{formatCurrency((agent.avg_cost || 0) / 100)}</div>
+                                <div className="text-muted-foreground hidden md:inline">promedio</div>
                               </div>
                             </div>
                           </div>
@@ -224,11 +200,11 @@ const Dashboard = () => {
             {/* Llamadas recientes */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <Activity className="h-4 w-4 md:h-5 md:w-5" />
                   Llamadas Recientes
                 </CardTitle>
-                <CardDescription>Últimas conversaciones registradas</CardDescription>
+                <CardDescription className="text-xs md:text-sm">Últimas conversaciones registradas</CardDescription>
               </CardHeader>
               <CardContent>
                 {callsLoading ? (
@@ -238,18 +214,18 @@ const Dashboard = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     {recentCalls?.slice(0, 10).map((call) => (
-                      <div key={call.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-2 h-2 rounded-full ${call.status === 'Completada' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                          <div>
-                            <p className="font-medium">{call.number}</p>
-                            <p className="text-sm text-muted-foreground">{call.duration}</p>
+                      <div key={call.id} className="flex items-center justify-between p-2 md:p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${call.status === 'Completada' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm md:text-base truncate">{call.number}</p>
+                            <p className="text-xs md:text-sm text-muted-foreground">{call.duration}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-6">
-                          <span className="text-sm font-medium">{call.cost}</span>
+                        <div className="flex items-center gap-3 md:gap-6 flex-shrink-0">
+                          <span className="text-xs md:text-sm font-medium">{call.cost}</span>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             call.status === 'Completada' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
