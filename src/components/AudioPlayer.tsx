@@ -119,7 +119,7 @@ const AudioPlayer = ({ audioUrl, conversationId, className }: AudioPlayerProps) 
 
   if (!audioUrl) {
     return (
-      <div className={cn("text-sm text-muted-foreground", className)}>
+      <div className={cn("text-xs text-muted-foreground", className)}>
         Sin audio disponible
       </div>
     );
@@ -127,7 +127,7 @@ const AudioPlayer = ({ audioUrl, conversationId, className }: AudioPlayerProps) 
 
   if (error) {
     return (
-      <div className={cn("text-sm text-red-600", className)}>
+      <div className={cn("text-xs text-red-600", className)}>
         {error}
       </div>
     );
@@ -137,24 +137,24 @@ const AudioPlayer = ({ audioUrl, conversationId, className }: AudioPlayerProps) 
     <div className={cn("space-y-2", className)}>
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 md:gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={togglePlayPause}
           disabled={isLoading}
-          className="h-8 w-8 p-0"
+          className="h-6 w-6 md:h-8 md:w-8 p-0 flex-shrink-0"
         >
           {isLoading ? (
-            <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <div className="h-2 w-2 md:h-3 md:w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : isPlaying ? (
-            <Pause className="h-3 w-3" />
+            <Pause className="h-2 w-2 md:h-3 md:w-3" />
           ) : (
-            <Play className="h-3 w-3" />
+            <Play className="h-2 w-2 md:h-3 md:w-3" />
           )}
         </Button>
 
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 space-y-1 min-w-0">
           <input
             type="range"
             min="0"
@@ -164,17 +164,18 @@ const AudioPlayer = ({ audioUrl, conversationId, className }: AudioPlayerProps) 
             className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
+            <span className="text-xs">{formatTime(currentTime)}</span>
+            <span className="text-xs">{formatTime(duration)}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        {/* Volume controls - hidden on mobile */}
+        <div className="hidden md:flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleMute}
-            className="h-6 w-6 p-0"
+            className="h-6 w-6 p-0 flex-shrink-0"
           >
             {isMuted || volume === 0 ? (
               <VolumeX className="h-3 w-3" />
@@ -198,10 +199,10 @@ const AudioPlayer = ({ audioUrl, conversationId, className }: AudioPlayerProps) 
           variant="ghost"
           size="sm"
           onClick={downloadAudio}
-          className="h-6 w-6 p-0"
+          className="h-6 w-6 p-0 flex-shrink-0"
           title="Descargar audio"
         >
-          <Download className="h-3 w-3" />
+          <Download className="h-2 w-2 md:h-3 md:w-3" />
         </Button>
       </div>
     </div>

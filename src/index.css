@@ -127,6 +127,19 @@
   .light {
     color-scheme: light;
   }
+
+  /* Responsive utilities */
+  @media (max-width: 768px) {
+    .hide-mobile {
+      @apply hidden;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .show-mobile {
+      @apply hidden;
+    }
+  }
 }
 
 @layer components {
@@ -135,15 +148,42 @@
   }
 
   .metric-card {
-    @apply glass-card p-6 hover:bg-card/70 transition-all duration-300 hover:scale-105;
+    @apply glass-card p-4 md:p-6 hover:bg-card/70 transition-all duration-300 hover:scale-105;
   }
 
   .sidebar-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent;
+    @apply flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 hover:bg-accent;
   }
 
   .sidebar-item.active {
     @apply bg-primary/20 text-primary border-r-2 border-primary;
+  }
+
+  /* Responsive table utilities */
+  .responsive-table {
+    @apply overflow-x-auto;
+  }
+
+  .responsive-table table {
+    @apply min-w-full;
+  }
+
+  /* Mobile-first card layouts */
+  .card-list {
+    @apply grid grid-cols-1 gap-3 md:gap-4;
+  }
+
+  .card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4;
+  }
+
+  /* Responsive spacing */
+  .container-padding {
+    @apply px-3 md:px-6 py-3 md:py-6;
+  }
+
+  .section-spacing {
+    @apply space-y-3 md:space-y-6;
   }
 }
 
@@ -158,4 +198,36 @@
   40% { content: '.'; }
   60% { content: '..'; }
   80%, 100% { content: '...'; }
+}
+
+/* Custom range input styles for better mobile experience */
+input[type="range"] {
+  @apply appearance-none bg-transparent cursor-pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  @apply bg-gray-200 rounded-lg h-1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  @apply appearance-none bg-primary rounded-full h-3 w-3 cursor-pointer shadow-sm;
+}
+
+input[type="range"]::-moz-range-track {
+  @apply bg-gray-200 rounded-lg h-1 border-0;
+}
+
+input[type="range"]::-moz-range-thumb {
+  @apply bg-primary rounded-full h-3 w-3 cursor-pointer border-0 shadow-sm;
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, [role="button"] {
+    @apply min-h-[44px];
+  }
+  
+  input, select, textarea {
+    @apply min-h-[44px];
+  }
 }

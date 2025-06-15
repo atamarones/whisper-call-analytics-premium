@@ -55,7 +55,6 @@ const Conversations = () => {
   };
 
   const getStatusBadge = (conversation: any) => {
-    // Priorizar el campo status sobre call_successful
     const status = conversation.status || conversation.call_successful;
     
     let variant: "default" | "destructive" | "secondary" | "outline" = 'secondary';
@@ -101,63 +100,65 @@ const Conversations = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <DashboardHeader />
-        <div className="p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground">Conversaciones</h1>
-            <p className="text-muted-foreground mt-1">Gestiona y analiza todas las conversaciones de llamadas</p>
+        <div className="p-3 md:p-6">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Conversaciones</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">Gestiona y analiza todas las conversaciones de llamadas</p>
           </div>
 
-          {/* Filtros Expandidos */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
+          {/* Filtros Responsive */}
+          <Card className="mb-4 md:mb-6">
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <Filter className="h-4 w-4 md:h-5 md:w-5" />
                 Filtros Avanzados
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="search">Buscar</Label>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <Label htmlFor="search" className="text-sm">Buscar</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder="Teléfono, nombre, agente..."
+                      placeholder="Teléfono, nombre..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dateFrom">Fecha desde</Label>
+                  <Label htmlFor="dateFrom" className="text-sm">Fecha desde</Label>
                   <Input
                     id="dateFrom"
                     type="date"
                     value={filters.dateFrom || ''}
                     onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                    className="text-sm"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dateTo">Fecha hasta</Label>
+                  <Label htmlFor="dateTo" className="text-sm">Fecha hasta</Label>
                   <Input
                     id="dateTo"
                     type="date"
                     value={filters.dateTo || ''}
                     onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                    className="text-sm"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="agent">Agente</Label>
+                  <Label htmlFor="agent" className="text-sm">Agente</Label>
                   <Select value={filters.agentId || 'all'} onValueChange={(value) => handleFilterChange('agentId', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los agentes" />
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="Todos" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos los agentes</SelectItem>
@@ -171,10 +172,10 @@ const Conversations = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Estado</Label>
+                  <Label htmlFor="status" className="text-sm">Estado</Label>
                   <Select value={filters.status || 'all'} onValueChange={(value) => handleFilterChange('status', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los estados" />
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="Todos" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos los estados</SelectItem>
@@ -187,10 +188,10 @@ const Conversations = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="callType">Tipo de Llamada</Label>
+                  <Label htmlFor="callType" className="text-sm">Tipo</Label>
                   <Select value={filters.call_type || 'all'} onValueChange={(value) => handleFilterChange('call_type', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los tipos" />
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="Todos" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos los tipos</SelectItem>
@@ -201,11 +202,11 @@ const Conversations = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <Button variant="outline" onClick={clearFilters}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2">
+                <Button variant="outline" onClick={clearFilters} size="sm">
                   Limpiar filtros
                 </Button>
-                <Button>
+                <Button size="sm" className="w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   Exportar CSV
                 </Button>
@@ -213,20 +214,20 @@ const Conversations = () => {
             </CardContent>
           </Card>
 
-          {/* Lista de Conversaciones Mejorada */}
+          {/* Lista de Conversaciones Responsive */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <Activity className="h-4 w-4 md:h-5 md:w-5" />
                 Lista de Conversaciones
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 {filteredConversations.length} conversaciones encontradas
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {isLoading ? (
-                <div className="space-y-4">
+                <div className="space-y-4 p-3 md:p-6">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className="flex items-center space-x-4">
                       <Skeleton className="h-12 w-12 rounded-full" />
@@ -238,144 +239,205 @@ const Conversations = () => {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            Contacto
-                          </div>
-                        </TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            Agente
-                          </div>
-                        </TableHead>
-                        <TableHead>Fecha/Hora</TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            Duración
-                          </div>
-                        </TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4" />
-                            Costo
-                          </div>
-                        </TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead>Calidad Audio</TableHead>
-                        <TableHead>Latencia</TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <Volume2 className="h-4 w-4" />
-                            Audio
-                          </div>
-                        </TableHead>
-                        <TableHead>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredConversations.map((conversation) => (
-                        <TableRow key={conversation.id}>
-                          <TableCell>
+                <>
+                  {/* Vista Mobile - Cards */}
+                  <div className="block md:hidden space-y-3 p-3">
+                    {filteredConversations.map((conversation) => (
+                      <Card key={conversation.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
                             <div>
-                              <div className="font-medium">{conversation.first_name || 'Sin nombre'}</div>
-                              <div className="text-sm text-muted-foreground">{conversation.phone_number}</div>
-                              {conversation.email && (
-                                <div className="text-xs text-muted-foreground">{conversation.email}</div>
-                              )}
-                              {conversation.conversation_id && (
-                                <div className="text-xs text-muted-foreground">ID: {conversation.conversation_id.slice(0, 8)}...</div>
-                              )}
+                              <div className="font-medium text-sm">{conversation.first_name || 'Sin nombre'}</div>
+                              <div className="text-xs text-muted-foreground">{conversation.phone_number}</div>
                             </div>
-                          </TableCell>
-                          <TableCell>
+                            {getStatusBadge(conversation)}
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 text-xs">
                             <div>
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <User className="h-3 w-3" />
+                                Agente
+                              </div>
                               <div className="font-medium">{getAgentName(conversation.agent_id)}</div>
-                              <div className="text-xs text-muted-foreground">{conversation.agent_id}</div>
                             </div>
-                          </TableCell>
-                          <TableCell>
                             <div>
-                              <div>{formatDate(conversation.created_at)}</div>
-                              {conversation.call_type && (
-                                <div className="text-xs text-muted-foreground capitalize">{conversation.call_type}</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div>{formatDuration(conversation.duration_seconds || conversation.call_duration_secs)}</div>
-                              {conversation.connection_type && (
-                                <div className="text-xs text-muted-foreground">{conversation.connection_type}</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div>{formatCost(conversation.cost_cents)}</div>
-                              {conversation.total_cost_credits && (
-                                <div className="text-xs text-muted-foreground">{conversation.total_cost_credits} credits</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              {getStatusBadge(conversation)}
-                              {conversation.error_code && (
-                                <div className="flex items-center gap-1 text-xs text-red-600">
-                                  <AlertCircle className="h-3 w-3" />
-                                  {conversation.error_code}
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {conversation.audio_quality_score ? (
-                              <div className="text-sm">
-                                {(conversation.audio_quality_score * 100).toFixed(1)}%
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                Duración
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">N/A</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {conversation.first_response_latency_ms ? (
-                              <div>
-                                <div className="text-sm">{conversation.first_response_latency_ms}ms</div>
-                                {conversation.average_response_latency_ms && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Avg: {conversation.average_response_latency_ms}ms
-                                  </div>
-                                )}
+                              <div className="font-medium">{formatDuration(conversation.duration_seconds || conversation.call_duration_secs)}</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs">
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <DollarSign className="h-3 w-3" />
+                                {formatCost(conversation.cost_cents)}
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">N/A</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="w-48">
+                            </div>
+                            <Button variant="outline" size="sm" className="text-xs">
+                              Ver detalles
+                            </Button>
+                          </div>
+
+                          {conversation.full_recording_url && (
+                            <div className="pt-2 border-t">
                               <AudioPlayer 
                                 audioUrl={conversation.full_recording_url} 
                                 conversationId={conversation.conversation_id}
+                                className="w-full"
                               />
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm">
-                              Ver detalles
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Vista Desktop - Table */}
+                  <div className="hidden md:block">
+                    <div className="overflow-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="min-w-[200px]">
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                Contacto
+                              </div>
+                            </TableHead>
+                            <TableHead className="min-w-[150px]">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Agente
+                              </div>
+                            </TableHead>
+                            <TableHead className="min-w-[120px]">Fecha/Hora</TableHead>
+                            <TableHead className="min-w-[100px]">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                Duración
+                              </div>
+                            </TableHead>
+                            <TableHead className="min-w-[80px]">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="h-4 w-4" />
+                                Costo
+                              </div>
+                            </TableHead>
+                            <TableHead className="min-w-[100px]">Estado</TableHead>
+                            <TableHead className="min-w-[100px]">Calidad</TableHead>
+                            <TableHead className="min-w-[100px]">Latencia</TableHead>
+                            <TableHead className="min-w-[200px]">
+                              <div className="flex items-center gap-2">
+                                <Volume2 className="h-4 w-4" />
+                                Audio
+                              </div>
+                            </TableHead>
+                            <TableHead className="min-w-[120px]">Acciones</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredConversations.map((conversation) => (
+                            <TableRow key={conversation.id}>
+                              <TableCell className="max-w-[200px]">
+                                <div>
+                                  <div className="font-medium truncate">{conversation.first_name || 'Sin nombre'}</div>
+                                  <div className="text-sm text-muted-foreground truncate">{conversation.phone_number}</div>
+                                  {conversation.email && (
+                                    <div className="text-xs text-muted-foreground truncate">{conversation.email}</div>
+                                  )}
+                                  {conversation.conversation_id && (
+                                    <div className="text-xs text-muted-foreground">ID: {conversation.conversation_id.slice(0, 8)}...</div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[150px]">
+                                <div>
+                                  <div className="font-medium truncate">{getAgentName(conversation.agent_id)}</div>
+                                  <div className="text-xs text-muted-foreground truncate">{conversation.agent_id}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[120px]">
+                                <div>
+                                  <div className="text-sm">{formatDate(conversation.created_at)}</div>
+                                  {conversation.call_type && (
+                                    <div className="text-xs text-muted-foreground capitalize">{conversation.call_type}</div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div>{formatDuration(conversation.duration_seconds || conversation.call_duration_secs)}</div>
+                                  {conversation.connection_type && (
+                                    <div className="text-xs text-muted-foreground">{conversation.connection_type}</div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div>{formatCost(conversation.cost_cents)}</div>
+                                  {conversation.total_cost_credits && (
+                                    <div className="text-xs text-muted-foreground">{conversation.total_cost_credits} credits</div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  {getStatusBadge(conversation)}
+                                  {conversation.error_code && (
+                                    <div className="flex items-center gap-1 text-xs text-red-600">
+                                      <AlertCircle className="h-3 w-3" />
+                                      {conversation.error_code}
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {conversation.audio_quality_score ? (
+                                  <div className="text-sm">
+                                    {(conversation.audio_quality_score * 100).toFixed(1)}%
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {conversation.first_response_latency_ms ? (
+                                  <div>
+                                    <div className="text-sm">{conversation.first_response_latency_ms}ms</div>
+                                    {conversation.average_response_latency_ms && (
+                                      <div className="text-xs text-muted-foreground">
+                                        Avg: {conversation.average_response_latency_ms}ms
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="min-w-[200px]">
+                                  <AudioPlayer 
+                                    audioUrl={conversation.full_recording_url} 
+                                    conversationId={conversation.conversation_id}
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Button variant="outline" size="sm" className="text-xs">
+                                  Ver detalles
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
