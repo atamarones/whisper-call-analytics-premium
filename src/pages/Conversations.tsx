@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Filter, Download, Search, Phone, Clock, DollarSign, User, Activity, AlertCircle } from 'lucide-react';
+import { Filter, Download, Search, Phone, Clock, DollarSign, User, Activity, AlertCircle, Volume2 } from 'lucide-react';
 import { useConversations, ConversationFilters } from '@/hooks/useConversations';
 import { useAgents } from '@/hooks/useAgents';
 import DashboardHeader from '@/components/DashboardHeader';
+import AudioPlayer from '@/components/AudioPlayer';
 
 const Conversations = () => {
   const [filters, setFilters] = useState<ConversationFilters>({});
@@ -269,6 +270,12 @@ const Conversations = () => {
                         <TableHead>Estado</TableHead>
                         <TableHead>Calidad Audio</TableHead>
                         <TableHead>Latencia</TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <Volume2 className="h-4 w-4" />
+                            Audio
+                          </div>
+                        </TableHead>
                         <TableHead>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -350,6 +357,14 @@ const Conversations = () => {
                             ) : (
                               <span className="text-muted-foreground text-sm">N/A</span>
                             )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="w-48">
+                              <AudioPlayer 
+                                audioUrl={conversation.full_recording_url} 
+                                conversationId={conversation.conversation_id}
+                              />
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm">

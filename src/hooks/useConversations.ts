@@ -32,6 +32,14 @@ export interface Conversation {
   duration_seconds?: number;
   error_code?: string;
   error_message?: string;
+  // Campos de audio
+  full_recording_url?: string;
+  full_recording_file_path?: string;
+  full_recording_file_size?: number;
+  full_recording_duration_ms?: number;
+  full_recording_format?: string;
+  audio_processing_status?: string;
+  audio_transcription_status?: string;
 }
 
 export interface ConversationFilters {
@@ -81,7 +89,14 @@ export const useConversations = (filters: ConversationFilters = {}) => {
             end_time,
             duration_seconds,
             error_code,
-            error_message
+            error_message,
+            full_recording_url,
+            full_recording_file_path,
+            full_recording_file_size,
+            full_recording_duration_ms,
+            full_recording_format,
+            audio_processing_status,
+            audio_transcription_status
           `)
           .order('created_at', { ascending: false });
 
