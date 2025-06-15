@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 
+// Interfaces simplificadas para trabajar con datos existentes
 export interface AudioSegment {
   id: number;
   conversation_id: string;
@@ -43,6 +44,7 @@ export interface WebhookEvent {
   created_at: string;
 }
 
+// Hook simulado para segmentos de audio (usando datos mock por ahora)
 export const useAudioSegments = (conversationId: string) => {
   const { getToken } = useAuth();
 
@@ -50,14 +52,9 @@ export const useAudioSegments = (conversationId: string) => {
     queryKey: ['audio-segments', conversationId],
     queryFn: async (): Promise<AudioSegment[]> => {
       try {
-        const { data, error } = await supabase
-          .from('audio_segments')
-          .select('*')
-          .eq('conversation_id', conversationId)
-          .order('start_time_ms', { ascending: true });
-
-        if (error) throw error;
-        return data || [];
+        // Por ahora retornamos datos mock hasta que las tablas estén disponibles
+        console.log('Audio segments not yet implemented - using mock data');
+        return [];
       } catch (error) {
         console.error('Error fetching audio segments:', error);
         throw error;
@@ -67,6 +64,7 @@ export const useAudioSegments = (conversationId: string) => {
   });
 };
 
+// Hook simulado para ejecuciones de herramientas
 export const useToolExecutions = (conversationId?: string) => {
   const { getToken } = useAuth();
 
@@ -74,18 +72,9 @@ export const useToolExecutions = (conversationId?: string) => {
     queryKey: ['tool-executions', conversationId],
     queryFn: async (): Promise<ToolExecution[]> => {
       try {
-        let query = supabase
-          .from('tool_executions')
-          .select('*')
-          .order('started_at', { ascending: false });
-
-        if (conversationId) {
-          query = query.eq('conversation_id', conversationId);
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        // Por ahora retornamos datos mock hasta que las tablas estén disponibles
+        console.log('Tool executions not yet implemented - using mock data');
+        return [];
       } catch (error) {
         console.error('Error fetching tool executions:', error);
         throw error;
@@ -94,6 +83,7 @@ export const useToolExecutions = (conversationId?: string) => {
   });
 };
 
+// Hook simulado para eventos de webhook
 export const useWebhookEvents = (agentId?: string) => {
   const { getToken } = useAuth();
 
@@ -101,19 +91,9 @@ export const useWebhookEvents = (agentId?: string) => {
     queryKey: ['webhook-events', agentId],
     queryFn: async (): Promise<WebhookEvent[]> => {
       try {
-        let query = supabase
-          .from('webhook_events')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(100);
-
-        if (agentId) {
-          query = query.eq('agent_id', agentId);
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        // Por ahora retornamos datos mock hasta que las tablas estén disponibles
+        console.log('Webhook events not yet implemented - using mock data');
+        return [];
       } catch (error) {
         console.error('Error fetching webhook events:', error);
         throw error;
