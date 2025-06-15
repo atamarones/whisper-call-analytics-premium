@@ -24,6 +24,8 @@ export interface ConversationAnalysisData {
   analysis_type?: string;
   analyzed_by?: string;
   analysis_confidence?: number;
+  user_satisfaction_indicators?: any;
+  policy_violations?: any;
   created_at?: string;
   updated_at?: string;
 }
@@ -39,7 +41,32 @@ export const useConversationAnalysis = (conversationId?: string) => {
         
         let query = supabase
           .from('conversation_analysis')
-          .select('*')
+          .select(`
+            id,
+            conversation_id,
+            overall_satisfaction_score,
+            conversation_quality_score,
+            goal_achievement_score,
+            sentiment_analysis,
+            emotion_analysis,
+            topics_discussed,
+            key_phrases,
+            conversation_summary,
+            action_items,
+            interruption_count,
+            dead_air_duration_seconds,
+            compliance_score,
+            conversion_achieved,
+            follow_up_required,
+            lead_quality_score,
+            analysis_type,
+            analyzed_by,
+            analysis_confidence,
+            user_satisfaction_indicators,
+            policy_violations,
+            created_at,
+            updated_at
+          `)
           .order('created_at', { ascending: false });
 
         if (conversationId) {
