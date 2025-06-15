@@ -8,10 +8,28 @@ export interface Agent {
   name: string;
   description?: string;
   voice_name?: string;
+  voice_category?: string;
   llm_provider?: string;
   llm_model?: string;
+  llm_temperature?: number;
+  llm_system_prompt?: string;
   is_active?: boolean;
   created_at?: string;
+  updated_at?: string;
+  
+  // Configuraciones adicionales
+  conversation_config?: any;
+  platform_settings?: any;
+  tools_enabled?: boolean;
+  tools_config?: any;
+  authentication_enabled?: boolean;
+  hipaa_compliance?: boolean;
+  pii_redaction?: boolean;
+  webhook_url?: string;
+  max_conversation_duration_seconds?: number;
+  max_concurrent_conversations?: number;
+  
+  // Métricas calculadas
   total_conversations?: number;
   avg_duration?: number;
   avg_satisfaction?: number;
@@ -27,16 +45,51 @@ export const useAgents = () => {
   return useQuery({
     queryKey: ['agents'],
     queryFn: async (): Promise<Agent[]> => {
-      const token = await getToken({ template: 'supabase' });
-      
-      const { data, error } = await supabase.functions.invoke('get-agents', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      if (error) throw error;
-      return data;
+      try {
+        const token = await getToken({ template: 'supabase' });
+        
+        // Primero obtenemos los agentes básicos
+        const { data: agentsData, error: agentsError } = await supabase
+          .from('agents')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (agentsError) {
+          console.error('Error fetching agents:', agentsError);
+          throw agentsError;
+        }
+
+        // Luego obtenemos las métricas de rendimiento de la vista
+        const { data: performanceData, error: performanceError } = await supabase
+          .from('agent_performance')
+          .select('*');
+
+        if (performanceError) {
+          console.error('Error fetching agent performance:', performanceError);
+          // No lanzamos error aquí, solo logueamos
+        }
+
+        // Combinamos los datos
+        const combinedData = agentsData?.map(agent => {
+          const performance = performanceData?.find(p => p.id === agent.id) || {};
+          return {
+            ...agent,
+            total_conversations: performance.total_conversations || 0,
+            avg_duration: performance.avg_duration || 0,
+            avg_satisfaction: performance.avg_satisfaction || 0,
+            avg_cost: performance.avg_cost || 0,
+            success_rate: performance.success_rate || 0,
+            completed_conversations: performance.completed_conversations || 0,
+            failed_conversations: performance.failed_conversations || 0
+          };
+        }) || [];
+
+        return combinedData;
+      } catch (error) {
+        console.error('Error in useAgents:', error);
+        throw error;
+      }
     },
     refetchInterval: 5 * 60 * 1000,
   });

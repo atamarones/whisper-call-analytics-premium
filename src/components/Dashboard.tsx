@@ -1,300 +1,245 @@
 
 import React from 'react';
-import { BarChart3, Calendar, Download, Phone, DollarSign, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useChartData } from '@/hooks/useChartData';
 import { useRecentCalls } from '@/hooks/useRecentCalls';
+import { useAgents } from '@/hooks/useAgents';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ArrowUpIcon, ArrowDownIcon, Phone, Clock, DollarSign, TrendingUp, Bot, Activity } from 'lucide-react';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
-  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
+  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
   const { data: chartData, isLoading: chartLoading } = useChartData();
   const { data: recentCalls, isLoading: callsLoading } = useRecentCalls();
+  const { data: agents, isLoading: agentsLoading } = useAgents();
 
-  // Mock data específico para llamadas
-  const mockChartData = [
-    { name: 'Lun', current: 12, previous: 8 },
-    { name: 'Mar', current: 19, previous: 14 },
-    { name: 'Mié', current: 15, previous: 12 },
-    { name: 'Jue', current: 25, previous: 18 },
-    { name: 'Vie', current: 22, previous: 16 },
-    { name: 'Sáb', current: 18, previous: 15 },
-    { name: 'Dom', current: 10, previous: 8 },
-  ];
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
+  };
 
-  const mockRecentCalls = [
-    { id: '1', number: '+1-555-0123', duration: '2:34', cost: '$0.45', status: 'Completada' },
-    { id: '2', number: '+1-555-0456', duration: '1:22', cost: '$0.28', status: 'Completada' },
-    { id: '3', number: '+1-555-0789', duration: '0:45', cost: '$0.15', status: 'Fallida' },
-    { id: '4', number: '+1-555-0321', duration: '3:12', cost: '$0.67', status: 'Completada' },
-    { id: '5', number: '+1-555-0654', duration: '1:56', cost: '$0.38', status: 'Completada' },
-  ];
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   const formatChange = (change: number) => {
     const isPositive = change >= 0;
-    const Icon = isPositive ? TrendingUp : TrendingDown;
-    const colorClass = isPositive ? 'text-green-500' : 'text-red-500';
-    
     return (
-      <p className={`text-xs ${colorClass} flex items-center gap-1`}>
-        <Icon className="h-3 w-3" />
+      <span className={`flex items-center text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+        {isPositive ? <ArrowUpIcon className="h-3 w-3 mr-1" /> : <ArrowDownIcon className="h-3 w-3 mr-1" />}
         {Math.abs(change).toFixed(1)}%
-      </p>
+      </span>
     );
   };
 
-  const formatYAxis = (value: number): string => {
-    return Math.floor(Math.abs(value)).toString();
-  };
-
-  // Show demo mode alert when there's no real data
-  const showDemoMode = !metrics || (!metrics.totalCalls && !metrics.totalMinutes);
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header específico para análisis de llamadas */}
-      <div className="border-b border-border bg-card">
-        <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <Phone className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Analítica de Llamadas</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Select defaultValue="7days">
-              <SelectTrigger className="w-40">
-                <Calendar className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7days">Últimos 7 días</SelectItem>
-                <SelectItem value="30days">Últimos 30 días</SelectItem>
-                <SelectItem value="90days">Últimos 90 días</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-          </div>
+  if (metricsLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-7 w-16 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
+    );
+  }
 
-      <div className="flex-1 p-6 space-y-6">
-        {showDemoMode && (
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Estás viendo datos de demostración. Para ver métricas reales, necesitas configurar agentes y tener llamadas en el sistema.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Stats Grid - Solo métricas de llamadas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total de minutos de llamada
-              </CardTitle>
-              <BarChart3 className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              {metricsLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-foreground">
-                    {metrics?.totalMinutes?.toLocaleString() || '245'}
-                  </div>
-                  {formatChange(metrics?.changes?.minutes || 15.2)}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Número de llamadas
-              </CardTitle>
-              <Phone className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              {metricsLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-foreground">
-                    {metrics?.totalCalls?.toLocaleString() || '89'}
-                  </div>
-                  {formatChange(metrics?.changes?.calls || 8.5)}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Costo total
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              {metricsLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-foreground">
-                    ${metrics?.totalCost?.toFixed(2) || '34.67'}
-                  </div>
-                  {formatChange(metrics?.changes?.cost || 12.3)}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Costo medio por llamada
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              {metricsLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-foreground">
-                    ${metrics?.avgCostPerCall?.toFixed(2) || '0.39'}
-                  </div>
-                  {formatChange(metrics?.changes?.avgCost || -2.1)}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Line Chart */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Comparación con período anterior</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData || mockChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))" 
-                    tickFormatter={formatYAxis}
-                    domain={[0, 'dataMax']}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="previous" 
-                    stroke="hsl(var(--muted))" 
-                    strokeWidth={2}
-                    name="Período anterior"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="current" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    name="Período actual"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Bar Chart */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Tendencia de llamadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData || mockChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))" 
-                    tickFormatter={formatYAxis}
-                    domain={[0, 'dataMax']}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }} 
-                  />
-                  <Bar 
-                    dataKey="current" 
-                    fill="hsl(var(--primary))" 
-                    name="Llamadas actuales"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Calls Table - Solo llamadas */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">Llamadas recientes</CardTitle>
+  return (
+    <div className="space-y-6 p-6">
+      {/* Métricas principales */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Llamadas</CardTitle>
+            <Phone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-muted-foreground">Número</TableHead>
-                  <TableHead className="text-muted-foreground">Duración</TableHead>
-                  <TableHead className="text-muted-foreground">Costo</TableHead>
-                  <TableHead className="text-muted-foreground">Estado</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(recentCalls || mockRecentCalls).map((call) => (
-                  <TableRow key={call.id}>
-                    <TableCell className="font-medium text-foreground">{call.number}</TableCell>
-                    <TableCell className="text-foreground">{call.duration}</TableCell>
-                    <TableCell className="text-foreground">{call.cost}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        call.status === 'Completada' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                      }`}>
-                        {call.status}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="text-2xl font-bold">{metrics?.totalCalls || 0}</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              {formatChange(metrics?.changes?.calls || 0)}
+              <span className="ml-1">vs período anterior</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Duración Total</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{Math.round((metrics?.totalMinutes || 0) / 60)}h {Math.round((metrics?.totalMinutes || 0) % 60)}m</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              {formatChange(metrics?.changes?.minutes || 0)}
+              <span className="ml-1">vs período anterior</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Costo Total</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency((metrics?.totalCost || 0) / 100)}</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              {formatChange(metrics?.changes?.cost || 0)}
+              <span className="ml-1">vs período anterior</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Costo Promedio</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency((metrics?.avgCostPerCall || 0) / 100)}</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              {formatChange(metrics?.changes?.avgCost || 0)}
+              <span className="ml-1">por llamada</span>
+            </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Gráficos y tablas */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Gráfico de tendencias */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tendencia de Llamadas</CardTitle>
+            <CardDescription>Comparación período actual vs anterior</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {chartLoading ? (
+              <Skeleton className="h-64 w-full" />
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="current" fill="#8884d8" name="Actual" />
+                  <Bar dataKey="previous" fill="#82ca9d" name="Anterior" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Rendimiento de Agentes */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              Rendimiento de Agentes
+            </CardTitle>
+            <CardDescription>Métricas principales por agente</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {agentsLoading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {agents?.slice(0, 5).map((agent) => (
+                  <div key={agent.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div>
+                        <p className="font-medium">{agent.name}</p>
+                        <p className="text-sm text-muted-foreground">{agent.description}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">{agent.total_conversations || 0}</span>
+                          <span className="text-muted-foreground ml-1">llamadas</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">{(agent.success_rate || 0).toFixed(1)}%</span>
+                          <span className="text-muted-foreground ml-1">éxito</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">{formatCurrency((agent.avg_cost || 0) / 100)}</span>
+                          <span className="text-muted-foreground ml-1">promedio</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Llamadas recientes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Llamadas Recientes
+          </CardTitle>
+          <CardDescription>Últimas conversaciones registradas</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {callsLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentCalls?.slice(0, 10).map((call) => (
+                <div key={call.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${call.status === 'Completada' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div>
+                      <p className="font-medium">{call.number}</p>
+                      <p className="text-sm text-muted-foreground">{call.duration}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <span className="text-sm font-medium">{call.cost}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      call.status === 'Completada' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {call.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
