@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -42,6 +41,12 @@ const Dashboard = () => {
         {Math.abs(change).toFixed(1)}%
       </span>
     );
+  };
+
+  const formatSuccessRate = (rate: string | number | undefined) => {
+    if (!rate) return '0.0';
+    if (typeof rate === 'string') return rate;
+    return rate.toFixed(1);
   };
 
   if (metricsLoading) {
@@ -199,7 +204,7 @@ const Dashboard = () => {
                                 <span className="text-muted-foreground ml-1">llamadas</span>
                               </div>
                               <div>
-                                <span className="font-medium">{(agent.success_rate || 0).toFixed(1)}%</span>
+                                <span className="font-medium">{formatSuccessRate(agent.success_rate)}%</span>
                                 <span className="text-muted-foreground ml-1">éxito</span>
                               </div>
                               <div>
