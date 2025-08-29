@@ -3,6 +3,7 @@ import React from 'react';
 import { Calendar, Download, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const DashboardHeader = () => {
   return (
@@ -20,6 +21,8 @@ const DashboardHeader = () => {
 
         {/* Right section - Controls */}
         <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+          {/* Theme Toggle */}
+          <ThemeToggle size="sm" />
           {/* Date selector - hidden on very small screens, simplified on medium */}
           <div className="hidden sm:block">
             <Select defaultValue="7days">
