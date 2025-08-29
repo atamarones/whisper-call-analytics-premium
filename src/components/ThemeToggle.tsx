@@ -25,7 +25,7 @@ const ThemeToggle = ({ showLabel = false, size = 'md' }: ThemeToggleProps) => {
         <Switch
           checked={!isLight}
           onCheckedChange={toggleTheme}
-          className="data-[state=checked]:bg-dashboard-navy data-[state=unchecked]:bg-gray-200"
+          className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 data-[state=checked]:border-primary data-[state=unchecked]:border-muted-foreground/30"
         />
         <Moon className={`h-4 w-4 ${!isLight ? 'text-blue-400' : 'text-gray-400'}`} />
       </div>

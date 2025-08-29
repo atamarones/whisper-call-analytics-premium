@@ -35,11 +35,6 @@ const callAnalyticsItems = [
   { title: "Agentes", url: "/agents", icon: Users },
 ];
 
-const chatbotAnalyticsItems = [
-  { title: "Dashboard Chatbots", url: "/chatbots", icon: Bot },
-  { title: "Interacciones", url: "/chatbot-interactions", icon: MessageSquare },
-  { title: "Configuración", url: "/chatbot-config", icon: Settings },
-];
 
 const generalItems = [
   { title: "Base de conocimientos", url: "/knowledge", icon: Database },
@@ -104,31 +99,6 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Chatbot Analytics Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider px-3 py-2">
-            {!collapsed && "Análisis de Chatbots"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {chatbotAnalyticsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={`sidebar-item group ${isActive(item.url) ? 'active' : ''} ${
-                        collapsed ? 'justify-center' : ''
-                      }`}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         {/* General Section */}
         <SidebarGroup>
