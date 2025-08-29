@@ -1,6 +1,5 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Agent {
@@ -43,56 +42,61 @@ export interface Agent {
 }
 
 export const useAgents = () => {
-  const { getToken, isLoaded } = useAuth();
-
   return useQuery({
     queryKey: ['agents'],
     queryFn: async (): Promise<Agent[]> => {
-      if (!isLoaded) {
-        console.log('Clerk not loaded yet, skipping agents fetch');
-        return [];
-      }
-
       try {
-        console.log('Fetching agents with authentication...');
-        const token = await getToken({ template: 'supabase' });
+        console.log('Fetching agents from database...');
         
-        if (!token) {
-          console.error('No authentication token available. Please check Clerk JWT template configuration.');
-          throw new Error('Authentication failed: No token available');
-        }
-
-        console.log('Calling get-agents edge function...');
-        const { data, error } = await supabase.functions.invoke('get-agents', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // Fetch agents directly from the database
+        const { data: agents, error } = await supabase
+          .from('agents')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error calling get-agents function:', error);
+          console.error('Error fetching agents:', error);
           throw new Error(error.message || 'Error fetching agents');
         }
 
-        console.log('Agents fetched successfully:', data?.length || 0, 'agents');
-        return data || [];
+        // Get call metrics for each agent
+        const agentsWithMetrics = await Promise.all(
+          (agents || []).map(async (agent) => {
+            const { data: calls } = await supabase
+              .from('calls')
+              .select('cost_cents, call_duration_secs, call_successful')
+              .eq('agent_id', agent.id)
+              .limit(1000);
+
+            const totalCalls = calls?.length || 0;
+            const totalDuration = calls?.reduce((sum, call) => sum + (call.call_duration_secs || 0), 0) || 0;
+            const totalCost = calls?.reduce((sum, call) => sum + ((call.cost_cents || 0) / 100), 0) || 0;
+            const successfulCalls = calls?.filter(call => call.call_successful === 'success').length || 0;
+
+            return {
+              ...agent,
+              total_conversations: totalCalls,
+              avg_duration: totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
+              avg_cost: totalCalls > 0 ? totalCost / totalCalls : 0,
+              success_rate: totalCalls > 0 ? ((successfulCalls / totalCalls) * 100).toFixed(1) : '0',
+              completed_conversations: successfulCalls,
+              failed_conversations: totalCalls - successfulCalls,
+            };
+          })
+        );
+
+        console.log('Agents fetched successfully:', agentsWithMetrics?.length || 0, 'agents');
+        return agentsWithMetrics || [];
       } catch (error) {
         console.error('Error in useAgents:', error);
         throw error;
       }
     },
-    enabled: isLoaded,
-    // Caché inteligente optimizado
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
-    refetchOnWindowFocus: false, // Evitar refetch innecesarios al cambiar ventana
-    retry: (failureCount, error) => {
-      // Solo reintentar si es un error de red, no de autenticación
-      if (error.message.includes('Authentication failed')) {
-        return false;
-      }
-      return failureCount < 2;
-    },
+    refetchOnWindowFocus: false,
+    retry: 2,
     refetchInterval: 10 * 60 * 1000, // 10 minutos
   });
 };
